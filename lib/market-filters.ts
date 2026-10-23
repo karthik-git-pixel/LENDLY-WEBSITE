@@ -6,7 +6,7 @@ import { getBookedProductIds } from './supabase-db';
 import { matchesCategory } from './catalog';
 import type { NearbyItem } from './use-nearby';
 
-export type MarketView = 'all' | 'rent' | 'sale';
+export type MarketView = 'all' | 'rent';
 export type MarketSort = 'popular' | 'nearest' | 'newest' | 'price_asc' | 'price_desc';
 
 export interface MarketFilters {
@@ -44,7 +44,7 @@ export function parseFilters(params: URLSearchParams): MarketFilters {
   const type = params.get('type');
   const sort = params.get('sort') as MarketSort | null;
   return {
-    type: type === 'rent' || type === 'sale' ? type : 'all',
+    type: type === 'rent' ? type : 'all',
     category: params.get('category') || 'all',
     sub: params.get('sub') || null,
     sort: sort && SORTS.includes(sort) ? sort : 'popular',

@@ -87,6 +87,17 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 # Razorpay
 NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+# Lender identity verification (required in production — encrypts Aadhaar, ID and PAN numbers)
+KYC_ENCRYPTION_KEY=a-long-random-secret
+# Verification runs in prototype mode (any details accepted) unless this is true
+NEXT_PUBLIC_KYC_STRICT=false
+# Optional: restrict the admin verification API to these emails
+ADMIN_EMAILS=you@example.com
+
+# Optional: map tiles (defaults to OpenStreetMap, no key needed; use a keyed provider for heavy traffic)
+NEXT_PUBLIC_MAP_TILE_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
+NEXT_PUBLIC_MAP_TILE_ATTRIBUTION=&copy; OpenStreetMap contributors
 ```
 
 ### 4. Database Setup
@@ -94,6 +105,12 @@ RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 Run the SQL migration in your Supabase SQL Editor:
 1. `supabase/schema.sql` (Database schema, tables, and RLS policies)
 2. `supabase/seed-demo.sql` (Optional: initial mock data and categories)
+
+Lenders verify their identity (Aadhaar, an ID photo and a selfie) before they can list. To review verifications, make your account an admin and open `/admin/kyc`:
+
+```sql
+UPDATE public.profiles SET is_admin = TRUE WHERE email = 'you@example.com';
+```
 
 ### 5. Run the Development Server
 
@@ -113,10 +130,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 │   │   ├── home/         # Local feed and product listings
 │   │   ├── plan/         # Event planning assistant
 │   │   ├── print/        # Print and Xerox orders
-│   │   ├── profile/      # User profile, orders, KYC, and saved items
+│   │   ├── profile/      # User profile, orders, and saved items
 │   │   ├── qr/           # QR code generation and verification
 │   │   ├── search/       # Search results page
-│   │   ├── sell/         # Product listing creation and management
+│   │   ├── sell/         # Lender side: onboarding, ID verification, shop settings, listings
 │   │   ├── seller/       # Seller public profile & dashboard
 │   │   └── shops/        # Local verified shops
 │   ├── admin/            # Admin KYC management

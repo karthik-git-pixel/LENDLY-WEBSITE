@@ -1,12 +1,16 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, KeyRound, Tag } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { getProduct, type Product } from '@/lib/supabase-db';
+import { kycSubmitted, shopReady } from '@/lib/kyc';
 import ListingForm from '@/components/listing/ListingForm';
 
+// Lendly lists rentals only. This is the one place a visitor has to sign in:
+// browsing, searching and the map all work without an account. Lenders
+// verify their identity and set up their shop before the first listing.
 export default function NewListingPage() {
   return (
     <Suspense fallback={null}>
@@ -17,38 +21,36 @@ export default function NewListingPage() {
 
 function NewListing() {
   const router = useRouter();
-  const params = useSearchParams();
+  const from = useSearchParams().get('from');
   const { user, profile, loading } = useAuth();
-  const type = params.get('type');
-  const kind = type === 'rent' || type === 'sale' ? type : null;
+  const [template, setTemplate] = useState<Product | null | undefined>(from ? undefined : null);
+  const ready = Boolean(profile && kycSubmitted(profile) && shopReady(profile));
 
   useEffect(() => {
-    if (!loading && !user) router.replace(`/login?redirect=${encodeURIComponent('/sell/new')}`);
-  }, [loading, user, router]);
+    if (loading) return;
+    if (!user) router.replace(`/login?redirect=${encodeURIComponent('/sell/new')}`);
+    else if (profile && !ready) router.replace('/sell/onboarding');
+  }, [loading, user, profile, ready, router]);
+
+  // "Duplicate" starts from one of your own listings
+  useEffect(() => {
+    if (!from || !profile) return;
+    let cancelled = false;
+    getProduct(from).then(p => { if (!cancelled) setTemplate(p && p.sellerId === profile.uid ? p : null); });
+    return () => { cancelled = true; };
+  }, [from, profile]);
 
   return (
     <div className="ln-page">
       <div className="top-header">
-        <button type="button" className="ln-icon-btn" aria-label="Back" onClick={() => (kind ? router.replace('/sell/new') : router.back())}><ArrowLeft size={20} /></button>
-        <h1 style={{ fontSize: 17, fontWeight: 800 }}>{kind === 'rent' ? 'Rent out an item' : kind === 'sale' ? 'Sell an item' : 'List on Lendly'}</h1>
+        <button type="button" className="ln-icon-btn" aria-label="Back" onClick={() => router.back()}><ArrowLeft size={20} /></button>
+        <h1 style={{ fontSize: 17, fontWeight: 800 }}>{template ? 'Copy a rental' : 'Rent out an item'}</h1>
         <span style={{ width: 44 }} />
       </div>
       <div className="ln-shell lf-shell">
-        {!kind ? (
-          <div className="lf-choose">
-            <p className="ln-note">What would you like to do?</p>
-            <Link href="/sell/new?type=rent" className="lf-choice">
-              <span className="lf-choice-icon"><KeyRound size={26} aria-hidden="true" /></span>
-              <span><strong>Rent it out</strong><em>Earn again and again — halls, sound systems, cameras, vehicles, furniture…</em></span>
-            </Link>
-            <Link href="/sell/new?type=sale" className="lf-choice">
-              <span className="lf-choice-icon"><Tag size={26} aria-hidden="true" /></span>
-              <span><strong>Sell it</strong><em>One-time sale to a neighbour. They pay when they pick it up.</em></span>
-            </Link>
-          </div>
-        ) : profile ? (
-          <ListingForm key={kind} kind={kind} />
-        ) : null}
+        {ready && template !== undefined
+          ? <ListingForm kind="rent" template={template ?? undefined} />
+          : <div className="ln-skel" style={{ height: 240, borderRadius: 16, marginTop: 16 }} />}
       </div>
     </div>
   );

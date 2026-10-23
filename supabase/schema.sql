@@ -213,6 +213,15 @@ CREATE INDEX IF NOT EXISTS products_seller_idx ON public.products (seller_id);
 
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
+-- Lenders verify their identity before listing (verify → set up shop → list).
+-- A submitted verification is enough to list; approval adds the Verified badge.
+CREATE OR REPLACE FUNCTION public.kyc_submitted()
+RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT COALESCE(
+    (SELECT kyc_status IN ('PENDING_VERIFICATION', 'VERIFIED') FROM public.profiles WHERE id = auth.uid()),
+    FALSE);
+$$;
+
 DROP POLICY IF EXISTS "Anyone can view available products" ON public.products;
 DROP POLICY IF EXISTS "Sellers can create products" ON public.products;
 DROP POLICY IF EXISTS "Sellers can update their own products" ON public.products;
@@ -221,7 +230,7 @@ DROP POLICY IF EXISTS "Sellers can delete their own products" ON public.products
 CREATE POLICY "Anyone can view available products"
   ON public.products FOR SELECT USING (true);
 CREATE POLICY "Sellers can create products"
-  ON public.products FOR INSERT WITH CHECK (auth.uid() = seller_id);
+  ON public.products FOR INSERT WITH CHECK (auth.uid() = seller_id AND public.kyc_submitted());
 CREATE POLICY "Sellers can update their own products"
   ON public.products FOR UPDATE USING (auth.uid() = seller_id) WITH CHECK (auth.uid() = seller_id);
 CREATE POLICY "Sellers can delete their own products"
@@ -1168,6 +1177,8 @@ $$;
 CREATE OR REPLACE FUNCTION public.submit_kyc(p_data JSONB)
 RETURNS VOID
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_doc TEXT;
 BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Please sign in';
@@ -1175,6 +1186,22 @@ BEGIN
   IF (SELECT kyc_status FROM public.profiles WHERE id = auth.uid()) = 'VERIFIED' THEN
     RAISE EXCEPTION 'Your KYC is already verified';
   END IF;
+  IF COALESCE(p_data->'identity'->>'aadhaarNumber', '') = '' THEN
+    RAISE EXCEPTION 'Your Aadhaar number is required';
+  END IF;
+  -- The selfie and ID photo must be files this user uploaded to the private bucket
+  FOREACH v_doc IN ARRAY ARRAY['selfie', 'idFront'] LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM storage.objects o
+      WHERE o.bucket_id = 'kyc-docs'
+        AND o.name = p_data->'documents'->>v_doc
+        AND (storage.foldername(o.name))[1] = auth.uid()::TEXT
+    ) THEN
+      RAISE EXCEPTION '%', CASE v_doc WHEN 'selfie' THEN 'Upload your selfie before submitting'
+                                      ELSE 'Upload a photo of your ID before submitting' END;
+    END IF;
+  END LOOP;
+
   INSERT INTO public.kyc_submissions (user_id, data, status, rejection_reason, submitted_at, reviewed_at, reviewed_by)
   VALUES (auth.uid(), p_data, 'PENDING_VERIFICATION', '', NOW(), NULL, NULL)
   ON CONFLICT (user_id) DO UPDATE
@@ -1182,6 +1209,8 @@ BEGIN
         submitted_at = NOW(), reviewed_at = NULL, reviewed_by = NULL;
   UPDATE public.profiles SET kyc_status = 'PENDING_VERIFICATION', kyc_rejection_reason = ''
   WHERE id = auth.uid();
+  PERFORM public._notify(auth.uid(), 'Verification submitted',
+    'We''re checking your ID — usually within 24 hours. You can set up your shop meanwhile.', 'kyc', '{}'::jsonb);
 END;
 $$;
 REVOKE ALL ON FUNCTION public.submit_kyc(JSONB) FROM PUBLIC, anon;
@@ -1583,6 +1612,7 @@ CREATE TRIGGER on_product_back_in_stock
 -- 13. STORAGE
 --   media      — public: listing photos, avatars, covers  ({uid}/...)
 --   print-docs — private: documents sent to a print shop  ({providerId}/{buyerId}/...)
+--   kyc-docs   — private: lender ID photos and selfies    ({uid}/...), owner and admins only
 -- ====================================================================
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -1613,6 +1643,22 @@ CREATE POLICY "print-docs: buyers upload" ON storage.objects FOR INSERT TO authe
   WITH CHECK (bucket_id = 'print-docs' AND (storage.foldername(name))[2] = auth.uid()::TEXT);
 CREATE POLICY "print-docs: parties read" ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = 'print-docs' AND auth.uid()::TEXT IN ((storage.foldername(name))[1], (storage.foldername(name))[2]));
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('kyc-docs', 'kyc-docs', FALSE, 10485760,
+        ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'])
+ON CONFLICT (id) DO UPDATE
+  SET public = EXCLUDED.public, file_size_limit = EXCLUDED.file_size_limit,
+      allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "kyc-docs: owners upload" ON storage.objects;
+DROP POLICY IF EXISTS "kyc-docs: owners and admins read" ON storage.objects;
+
+-- No update or delete: a submitted document can't be swapped out after review
+CREATE POLICY "kyc-docs: owners upload" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'kyc-docs' AND (storage.foldername(name))[1] = auth.uid()::TEXT);
+CREATE POLICY "kyc-docs: owners and admins read" ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'kyc-docs' AND ((storage.foldername(name))[1] = auth.uid()::TEXT OR public.is_admin()));
 
 
 -- ====================================================================

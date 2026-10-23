@@ -39,7 +39,7 @@ export default function AuthBrandPanel() {
         </ul>
       </div>
 
-      <p className="lp-auth-foot">Buy · Sell · Rent — made for neighbourhoods across India.</p>
+      <p className="lp-auth-foot">Rent nearby · Rent out · Waste less — made for neighbourhoods across India.</p>
     </aside>
   );
 }

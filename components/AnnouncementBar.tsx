@@ -13,7 +13,7 @@ const newsItems = [
   {
     badge: 'HYPERLOCAL',
     badgeIcon: MapPin,
-    text: 'Buy & rent from verified neighbors within 0–30km',
+    text: 'Rent from verified neighbours and shops within 0–30km',
     link: '/explore',
   },
   {
@@ -23,9 +23,9 @@ const newsItems = [
     link: '/explore',
   },
   {
-    badge: 'SELL & RENT',
+    badge: 'RENT OUT',
     badgeIcon: Tag,
-    text: 'List your items or rental gear in under 30 seconds',
+    text: 'List your rental gear in under 30 seconds',
     link: '/sell',
   },
   {

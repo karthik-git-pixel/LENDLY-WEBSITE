@@ -9,7 +9,7 @@ import { BadgeCheck, Sparkles, Star } from 'lucide-react';
 import { useUserLocation } from '@/lib/location-context';
 import { useNearbyMarket, type NearbyItem, type Shop } from '@/lib/use-nearby';
 import { applyFilters, matchesText, useBookedToday, useMarketFilters } from '@/lib/market-filters';
-import { isEventQuery, matchesCategory } from '@/lib/catalog';
+import { isEventQuery, itemsInShopGenres, matchesCategory } from '@/lib/catalog';
 import { areaName, formatDistance } from '@/lib/location';
 import { getOpenState } from '@/lib/store-hours';
 import SearchBar from '@/components/market/SearchBar';
@@ -18,7 +18,7 @@ import ItemGrid, { ItemGridSkeleton } from '@/components/market/ItemGrid';
 import NearbyEmpty from '@/components/market/NearbyEmpty';
 import { avatarFor } from '@/components/AppHeader';
 
-const MapView = dynamic(() => import('@/components/MapView'), { ssr: false, loading: () => <div className="ln-skel" style={{ height: 260, borderRadius: 18, marginTop: 12 }} /> });
+const MapView = dynamic(() => import('@/components/MapView'), { ssr: false, loading: () => <div className="ln-skel" style={{ height: 340, borderRadius: 18, marginTop: 12 }} /> });
 
 type ShopSort = 'nearest' | 'rating';
 
@@ -52,7 +52,7 @@ function SearchContent() {
     const needle = q.trim().toLowerCase();
     const list = market.nearbyShops.filter(s => {
       if (filters.verified && !s.isVerified) return false;
-      const theirs = market.nearbyItems.filter(i => i.sellerId === s.uid);
+      const theirs = itemsInShopGenres(s.storeCategory, market.nearbyItems.filter(i => i.sellerId === s.uid));
       if (filters.category !== 'all' && !theirs.some(i => matchesCategory(i, filters.category))) return false;
       if (!needle) return true;
       const text = `${s.storeName} ${s.displayName} ${s.topCategory} ${s.storeDescription}`.toLowerCase();
@@ -68,6 +68,9 @@ function SearchContent() {
     p.set('tab', next);
     router.replace(`/search?${p.toString()}`, { scroll: false });
   };
+
+  const mapProducts = useMemo(() => (tab === 'products' ? items.slice(0, 60) : []), [tab, items]);
+  const mapShops = useMemo(() => (tab === 'shops' ? shops : []), [tab, shops]);
 
   const user = device ? { lat: device.lat, lng: device.lng, accuracy: device.accuracy } : null;
 
@@ -100,14 +103,14 @@ function SearchContent() {
             center={coords}
             user={user}
             radiusKm={radiusKm}
-            shops={tab === 'shops' ? shops : []}
-            products={tab === 'products' ? items.slice(0, 60) : []}
+            shops={mapShops}
+            products={mapProducts}
             onShopClick={id => router.push(`/seller/${id}`)}
             onProductClick={id => router.push(`/product/${id}`)}
             onLocate={async () => { const fix = await locate(); return fix ? { lat: fix.lat, lng: fix.lng } : null; }}
             locating={status === 'locating'}
             focus={focus}
-            height={260}
+            height={340}
           />
         </div>
 
@@ -130,7 +133,7 @@ function SearchContent() {
               <ShopRow
                 key={shop.uid}
                 shop={shop}
-                items={market.nearbyItems.filter(i => i.sellerId === shop.uid)}
+                items={itemsInShopGenres(shop.storeCategory, market.nearbyItems.filter(i => i.sellerId === shop.uid))}
                 onHover={() => shop.storeLocation && setFocus({ lat: shop.storeLocation.lat, lng: shop.storeLocation.lng, zoom: 14 })}
               />
             ))}

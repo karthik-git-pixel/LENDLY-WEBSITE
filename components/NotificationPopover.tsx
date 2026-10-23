@@ -34,7 +34,7 @@ export function notificationHref(n: AppNotification): string | null {
   if (d.orderId) return `/profile/orders?order=${d.orderId}`;
   if (d.printOrderId) return n.type === 'print_order' ? '/print/orders' : null;
   if (d.productId) return `/product/${d.productId}`;
-  if (n.type === 'kyc') return '/profile/kyc';
+  if (n.type === 'kyc') return '/sell/verify';
   return null;
 }
 

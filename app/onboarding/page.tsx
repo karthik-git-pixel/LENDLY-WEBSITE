@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import {
   Store, Camera, ArrowRight, ArrowLeft, Check, Navigation,
   Gift, MapPin, UserCheck, User, Phone, ShoppingBag,
-  FileText, CheckCircle2, ShieldCheck, ChevronDown
+  CheckCircle2, ShieldCheck, ChevronDown
 } from 'lucide-react';
 
 const COUNTRIES = [
@@ -62,10 +62,8 @@ export default function OnboardingPage() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locLoading, setLocLoading] = useState(false);
 
-  // Optional seller setup
+  // Lenders go on to verify their identity and set up a shop
   const [wantsSeller, setWantsSeller] = useState(false);
-  const [storeName, setStoreName] = useState('');
-  const [storeDescription, setStoreDescription] = useState('');
 
   const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || COUNTRIES[0];
 
@@ -173,15 +171,11 @@ export default function OnboardingPage() {
           lng: location?.lng || 0,
           address: address,
         },
-        isSeller: wantsSeller,
-        ...(wantsSeller && storeName ? { storeName } : {}),
-        ...(wantsSeller && storeDescription ? { storeDescription } : {}),
-        ...(wantsSeller && location ? { storeLocation: { lat: location.lat, lng: location.lng, address } } : {}),
       });
 
       await refreshProfile();
       toast.success('Welcome to Lendly! 🎉');
-      router.push('/home');
+      router.push(wantsSeller ? '/sell/onboarding' : '/home');
     } catch (err) {
       toast.error(getErrorMessage(err, 'Failed to save profile'));
     } finally {
@@ -203,7 +197,7 @@ export default function OnboardingPage() {
           <span>Welcome to Lendly</span>
         </h2>
         <p style={{ color: '#5c6b8a', fontSize: 13.5, fontWeight: 500, marginTop: 4 }}>
-          Set up your local identity for buying, selling & renting
+          Set up your local identity for renting & renting out
         </p>
       </div>
 
@@ -387,10 +381,10 @@ export default function OnboardingPage() {
         </span>
         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0b2240', letterSpacing: '-0.4px', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
           <Store size={24} style={{ color: '#16a34a', flexShrink: 0 }} />
-          <span>Sell on Lendly?</span>
+          <span>Rent out on Lendly?</span>
         </h2>
         <p style={{ color: '#5c6b8a', fontSize: 13.5, fontWeight: 500, marginTop: 4 }}>
-          Choose your account mode. You can toggle this anytime in settings.
+          You can start renting out any time from your profile.
         </p>
       </div>
 
@@ -416,9 +410,9 @@ export default function OnboardingPage() {
             <ShoppingBag size={20} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#0b2240' }}>Just Buying & Renting</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#0b2240' }}>Just Renting</div>
             <div style={{ fontSize: 12.5, color: '#64748b', fontWeight: 500, marginTop: 2 }}>
-              Browse items, rent gear, and place orders locally
+              Browse and rent gear from shops near you
             </div>
           </div>
           <div style={{
@@ -451,9 +445,9 @@ export default function OnboardingPage() {
             <Store size={20} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#0b2240' }}>I Want to Sell & Rent Out</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#0b2240' }}>I Want to Rent Out My Items</div>
             <div style={{ fontSize: 12.5, color: '#64748b', fontWeight: 500, marginTop: 2 }}>
-              List items for sale/rent & set up your store
+              Next: verify your ID and set up your shop
             </div>
           </div>
           <div style={{
@@ -468,34 +462,12 @@ export default function OnboardingPage() {
       </div>
 
       {wantsSeller && (
-        <div className="fade-in" style={{ paddingTop: 8, borderTop: '1px dashed #e2e8f0' }}>
-          <div style={{ marginBottom: 16, marginTop: 12 }}>
-            <label className="input-label" style={{ fontSize: 12.5, fontWeight: 600, color: '#334155', marginBottom: 6, display: 'block' }}>Store Name *</label>
-            <div style={{ position: 'relative' }}>
-              <Store size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <input
-                className="input-field"
-                style={{ paddingLeft: 42, height: 48, borderRadius: 14, fontSize: 14 }}
-                placeholder="e.g. Aldrin's Tech & Gear Shop"
-                value={storeName}
-                onChange={e => setStoreName(e.target.value)}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="input-label" style={{ fontSize: 12.5, fontWeight: 600, color: '#334155', marginBottom: 6, display: 'block' }}>Short Description</label>
-            <div style={{ position: 'relative' }}>
-              <FileText size={18} style={{ position: 'absolute', left: 14, top: 14, color: '#94a3b8' }} />
-              <textarea
-                className="input-field"
-                style={{ paddingLeft: 42, borderRadius: 14, fontSize: 14, paddingTop: 12 }}
-                placeholder="Tell buyers what products or rental services you offer..."
-                value={storeDescription}
-                onChange={e => setStoreDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
-          </div>
+        <div className="fade-in" style={{
+          padding: '12px 14px', borderRadius: 14, background: '#f0fdf4', border: '1px solid #bbf7d0',
+          color: '#14532d', fontSize: 13, fontWeight: 500, lineHeight: 1.45, display: 'flex', gap: 10, alignItems: 'flex-start',
+        }}>
+          <CheckCircle2 size={18} style={{ color: '#16a34a', flexShrink: 0, marginTop: 1 }} />
+          <span>After this you&apos;ll verify your identity (Aadhaar, an ID photo and a selfie), then set up your shop and add rentals.</span>
         </div>
       )}
     </div>,

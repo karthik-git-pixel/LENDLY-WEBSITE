@@ -8,7 +8,6 @@ import {
   SORT_LABELS,
   type MarketFilters,
   type MarketSort,
-  type MarketView,
 } from '@/lib/market-filters';
 
 const RADIUS_PRESETS = [1, 2, 5, 10, 20, 30];
@@ -25,13 +24,11 @@ interface FilterBarProps {
   onReset: () => void;
   radiusKm: number;
   onRadiusChange: (km: number) => void;
-  /** Hide the Rent/Buy chips where the page already fixes the type */
-  showTypeChips?: boolean;
   resultCount?: number;
 }
 
 export default function FilterBar({
-  filters, onChange, onReset, radiusKm, onRadiusChange, showTypeChips = true, resultCount,
+  filters, onChange, onReset, radiusKm, onRadiusChange, resultCount,
 }: FilterBarProps) {
   const [sheet, setSheet] = useState<'filters' | 'radius' | null>(null);
   const activeCount = countActiveFilters(filters);
@@ -43,14 +40,10 @@ export default function FilterBar({
     </button>
   );
 
-  const setType = (type: MarketView) => onChange({ type: filters.type === type ? 'all' : type, category: 'all' });
-
   return (
     <>
       <div className="ln-chips" role="toolbar" aria-label="Filters">
         {chip('Nearest', filters.sort === 'nearest', () => onChange({ sort: filters.sort === 'nearest' ? 'popular' : 'nearest' }))}
-        {showTypeChips && chip('Rent', filters.type === 'rent', () => setType('rent'))}
-        {showTypeChips && chip('Buy', filters.type === 'sale', () => setType('sale'))}
         {chip('Under ₹500', under500, () => onChange(under500 ? { maxPrice: null } : { minPrice: null, maxPrice: 500 }))}
         {chip('Verified', filters.verified, () => onChange({ verified: !filters.verified }))}
         {chip('Available today', filters.availableToday, () => onChange({ availableToday: !filters.availableToday }))}
@@ -85,20 +78,6 @@ export default function FilterBar({
           </>
         }
       >
-        {showTypeChips && (
-          <fieldset className="ln-fieldset">
-            <legend className="ln-field-label">Listing type</legend>
-            <div className="ln-seg" role="radiogroup">
-              {([['all', 'All'], ['rent', 'Rent'], ['sale', 'Buy']] as [MarketView, string][]).map(([id, label]) => (
-                <button key={id} type="button" role="radio" aria-checked={filters.type === id} className="ln-seg-btn"
-                  onClick={() => onChange({ type: id, category: 'all' })}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        )}
-
         <fieldset className="ln-fieldset">
           <legend className="ln-field-label">Sort by</legend>
           <div className="ln-radio-list">
@@ -149,7 +128,7 @@ export default function FilterBar({
           <legend className="ln-field-label">More</legend>
           <label className="ln-check">
             <input type="checkbox" checked={filters.verified} onChange={e => onChange({ verified: e.target.checked })} />
-            <span>Verified sellers only</span>
+            <span>Verified shops only</span>
           </label>
           <label className="ln-check">
             <input type="checkbox" checked={filters.availableToday} onChange={e => onChange({ availableToday: e.target.checked })} />

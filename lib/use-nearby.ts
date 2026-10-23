@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAllAvailableProducts, getAllSellers, hasPoint, type Product, type UserProfile } from './supabase-db';
 import { useUserLocation } from './location-context';
 import { withDistance, getDistanceKm } from './location';
-import { resolveCategory } from './catalog';
+import { itemsInShopGenres, resolveCategory } from './catalog';
 
 export interface NearbyItem extends Product {
   distance: number;
@@ -81,7 +81,8 @@ export function useNearbyMarket() {
     }
     return sellers
       .map(s => {
-        const listings = bySeller.get(s.uid) || [];
+        // Only what fits the genre the shop deals in counts as its stock
+        const listings = itemsInShopGenres(s.storeCategory, bySeller.get(s.uid) || []);
         const where = hasPoint(s.storeLocation) ? s.storeLocation : listings.find(l => hasPoint(l.location))?.location;
         if (!where) return null;
         const topCategory = s.storeCategory

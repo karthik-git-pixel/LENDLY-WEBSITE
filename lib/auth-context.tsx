@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { getMyProfile, toggleSavedProduct, type UserProfile } from './firestore';
 
@@ -10,7 +11,7 @@ export interface AppUser {
   email: string | null;
   displayName?: string | null;
   photoURL?: string | null;
-  user_metadata?: Record<string, any>;
+  user_metadata?: Record<string, unknown>;
 }
 
 export interface SignUpResult {
@@ -35,7 +36,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-function normalizeUser(sbUser: any): AppUser | null {
+function normalizeUser(sbUser: User | null | undefined): AppUser | null {
   if (!sbUser) return null;
   return {
     id: sbUser.id,
@@ -74,16 +75,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
+    // The user only appears once their profile has loaded. Otherwise pages
+    // briefly see "signed in, no profile" and bounce to onboarding.
+
     // 1. Initial session check
     supabase.auth
       .getSession()
-      .then(({ data: { session } }) => {
+      .then(async ({ data: { session } }) => {
         if (!isMounted) return;
         const appUser = normalizeUser(session?.user);
+        if (appUser) await fetchProfile(appUser.id);
+        if (!isMounted) return;
         setUser(appUser);
-        if (appUser) {
-          fetchProfile(appUser.id);
-        }
         setLoading(false);
       })
       .catch(() => {
@@ -96,12 +99,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       const appUser = normalizeUser(session?.user);
-      setUser(appUser);
       if (appUser) {
         await fetchProfile(appUser.id);
       } else {
         setProfile(null);
       }
+      if (!isMounted) return;
+      setUser(appUser);
       setLoading(false);
     });
 

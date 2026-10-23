@@ -2,111 +2,130 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Crosshair, ImagePlus, Loader2, MapPin, Search, X } from 'lucide-react';
+import { ImagePlus, Loader2, Star, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth-context';
 import { useUserLocation } from '@/lib/location-context';
 import { createProduct, deleteProduct, hasPoint, updateProduct, type GeoPoint, type Product } from '@/lib/supabase-db';
 import { uploadImage } from '@/lib/upload';
-import { reverseGeocode, searchAddress } from '@/lib/location';
 import {
-  CATEGORIES, RENT_UNITS, SALE_CONDITIONS, SUBCATEGORY_SPEC, rentFeatureOptions, type ListingType, type RentUnit,
+  CATEGORIES, RENT_UNITS, SALE_CONDITIONS, SUBCATEGORY_SPEC, fitsShopLabel, rentFeatureOptions, shopMainCategory,
+  type ListingType, type RentUnit,
 } from '@/lib/catalog';
-
-const MapView = dynamic(() => import('@/components/MapView'), { ssr: false, loading: () => <div className="ln-skel" style={{ height: 200, borderRadius: 14 }} /> });
+import LocationPicker from './LocationPicker';
 
 const MAX_PHOTOS = 8;
 
-interface ListingFormProps {
-  kind: ListingType;
-  initial?: Product;
+/** A listing photo: already uploaded (src is its URL) or picked just now (src is a local preview) */
+interface Photo {
+  key: string;
+  src: string;
+  file?: File;
 }
 
-export default function ListingForm({ kind, initial }: ListingFormProps) {
+interface ListingFormProps {
+  kind: ListingType;
+  /** The listing being edited */
+  initial?: Product;
+  /** A listing to copy into a new one */
+  template?: Product;
+}
+
+export default function ListingForm({ kind, initial, template }: ListingFormProps) {
   const router = useRouter();
   const { profile } = useAuth();
-  const { coords, address, locate } = useUserLocation();
+  const { coords, address } = useUserLocation();
   const rent = kind === 'rent';
   const editing = Boolean(initial);
+  const source = initial || template;
 
-  const startCategory = initial?.category || (rent ? 'Event & Sound' : 'Electronics');
-  const [title, setTitle] = useState(initial?.title || '');
-  const [description, setDescription] = useState(initial?.description || '');
+  // New rentals start in the shop's own category, on its first speciality
+  const startCategory = source?.category || shopMainCategory(profile?.storeCategory)?.name || (rent ? 'Event & Sound' : 'Electronics');
+  const startSub = source ? source.subcategory || '' : (profile?.storeCategory || '').split(',').map(s => s.trim())
+    .find(s => CATEGORIES.find(c => c.name === startCategory)?.subcategories.includes(s)) || '';
+  const [title, setTitle] = useState(source?.title || '');
+  const [description, setDescription] = useState(source?.description || '');
   const [category, setCategory] = useState(startCategory);
-  const [subcategory, setSubcategory] = useState(initial?.subcategory || '');
-  const [price, setPrice] = useState(initial ? String(initial.price) : '');
-  const [originalPrice, setOriginalPrice] = useState(initial?.originalPrice ? String(initial.originalPrice) : '');
-  const [condition, setCondition] = useState(initial?.condition || 'Good');
-  const [unit, setUnit] = useState<RentUnit>((initial?.rentDuration as RentUnit) || 'day');
-  const [deposit, setDeposit] = useState(initial?.securityDeposit ? String(initial.securityDeposit) : '');
-  const [minUnits, setMinUnits] = useState(String(initial?.minUnits || 1));
-  const [maxUnits, setMaxUnits] = useState(initial?.maxUnits ? String(initial.maxUnits) : '');
-  const [capacity, setCapacity] = useState(initial?.capacity ? String(initial.capacity) : '');
-  const [features, setFeatures] = useState<string[]>(initial?.features || []);
-  const [spec, setSpec] = useState(() => Object.values(initial?.attributes || {})[0] || '');
-  const [images, setImages] = useState<string[]>(initial?.images || []);
-  const [files, setFiles] = useState<{ file: File; preview: string }[]>([]);
+  const [subcategory, setSubcategory] = useState(startSub);
+  const [price, setPrice] = useState(source ? String(source.price) : '');
+  const [originalPrice, setOriginalPrice] = useState(source?.originalPrice ? String(source.originalPrice) : '');
+  const [condition, setCondition] = useState(source?.condition || 'Good');
+  const [unit, setUnit] = useState<RentUnit>((source?.rentDuration as RentUnit) || 'day');
+  const [deposit, setDeposit] = useState(source?.securityDeposit ? String(source.securityDeposit) : '');
+  const [minUnits, setMinUnits] = useState(String(source?.minUnits || 1));
+  const [maxUnits, setMaxUnits] = useState(source?.maxUnits ? String(source.maxUnits) : '');
+  const [capacity, setCapacity] = useState(source?.capacity ? String(source.capacity) : '');
+  const [features, setFeatures] = useState<string[]>(source?.features || []);
+  const [spec, setSpec] = useState(() => Object.values(source?.attributes || {})[0] || '');
+  const [photos, setPhotos] = useState<Photo[]>(() => (source?.images || []).map((src, i) => ({ key: `${i}-${src}`, src })));
   const [place, setPlace] = useState<GeoPoint | null>(
-    initial && hasPoint(initial.location) ? initial.location
+    source && hasPoint(source.location) ? source.location
       : profile?.storeLocation && hasPoint(profile.storeLocation) ? profile.storeLocation
       : null
   );
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<GeoPoint[]>([]);
   const [active, setActive] = useState(initial ? initial.status !== 'paused' : true);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   const subs = useMemo(() => CATEGORIES.find(c => c.name === category)?.subcategories || [], [category]);
   const specField = SUBCATEGORY_SPEC[subcategory];
   const featureOptions = rentFeatureOptions(subcategory);
   const isVenue = subcategory === 'Halls & Venues';
   const where = place || { lat: coords.lat, lng: coords.lng, address };
+  const storeLabel = profile?.storeCategory || '';
+  const offGenre = rent && Boolean(storeLabel) && Boolean(subcategory) && !fitsShopLabel(storeLabel, { category, subcategory, title });
 
   const addFiles = (list: FileList | null) => {
     if (!list) return;
-    const room = MAX_PHOTOS - images.length - files.length;
-    const picked = Array.from(list).filter(f => f.type.startsWith('image/')).slice(0, room);
-    if (picked.length < (list.length || 0)) toast(`Up to ${MAX_PHOTOS} photos`);
-    setFiles(prev => [...prev, ...picked.map(file => ({ file, preview: URL.createObjectURL(file) }))]);
+    const images = Array.from(list).filter(f => f.type.startsWith('image/'));
+    const room = MAX_PHOTOS - photos.length;
+    if (images.length > room) toast(`Up to ${MAX_PHOTOS} photos`);
+    const picked = images.slice(0, Math.max(0, room)).map(file => ({
+      key: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
+      src: URL.createObjectURL(file),
+      file,
+    }));
+    if (picked.length) setPhotos(prev => [...prev, ...picked]);
   };
 
-  const useMyLocation = async () => {
-    const fix = await locate({ switchToDevice: false });
-    if (!fix) return toast.error('Could not get your location — search for the area instead');
-    setPlace({ lat: fix.lat, lng: fix.lng, address: await reverseGeocode(fix.lat, fix.lng) });
-  };
+  const removePhoto = (key: string) => setPhotos(prev => prev.filter(p => p.key !== key));
 
-  const runSearch = async () => {
-    if (query.trim().length < 2) return;
-    setResults(await searchAddress(query));
-  };
-
-  const movePin = async (c: { lat: number; lng: number }) => {
-    setPlace({ lat: c.lat, lng: c.lng, address: place?.address || '' });
-    const addr = await reverseGeocode(c.lat, c.lng);
-    setPlace({ lat: c.lat, lng: c.lng, address: addr });
-  };
+  const makeCover = (key: string) => setPhotos(prev => {
+    const chosen = prev.find(p => p.key === key);
+    return chosen ? [chosen, ...prev.filter(p => p.key !== key)] : prev;
+  });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return toast.error('Please log in again');
     if (!title.trim()) return toast.error('Add a title');
     if (!(Number(price) > 0)) return toast.error(rent ? 'Set your rental price' : 'Set your price');
-    if (images.length + files.length === 0) return toast.error('Add at least one photo');
+    if (photos.length === 0) return toast.error('Add at least one photo');
     if (!hasPoint(where)) return toast.error('Set the pickup location');
 
-    setSaving(true);
+    const pending = photos.filter(p => p.file).length;
+    let uploaded = 0;
+    setSaving(pending ? `Uploading photos 0/${pending}…` : 'Saving…');
     try {
-      const uploaded = await Promise.all(files.map(f => uploadImage(f.file, profile.uid, 'products')));
+      const images = await Promise.all(photos.map(async p => {
+        if (!p.file) return p.src;
+        const url = await uploadImage(p.file, profile.uid, 'products');
+        uploaded += 1;
+        setSaving(uploaded < pending ? `Uploading photos ${uploaded}/${pending}…` : 'Saving…');
+        return url;
+      }));
+      // Uploaded photos stay uploaded if saving fails, so a retry won't send them again
+      setPhotos(images.map((src, i) => ({ key: photos[i].key, src })));
+
       const payload: Partial<Product> = {
         title: title.trim(),
         description: description.trim(),
         price: Number(price),
         category,
         subcategory,
-        images: [...images, ...uploaded],
+        images,
         location: { lat: where.lat, lng: where.lng, address: where.address || 'Nearby' },
         listingType: kind,
         status: active ? 'available' : 'paused',
@@ -148,7 +167,7 @@ export default function ListingForm({ kind, initial }: ListingFormProps) {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not save the listing');
     } finally {
-      setSaving(false);
+      setSaving(null);
     }
   };
 
@@ -167,22 +186,27 @@ export default function ListingForm({ kind, initial }: ListingFormProps) {
     <form className="lf" onSubmit={submit}>
       <section className="lf-section">
         <h2>Photos</h2>
-        <div className="lf-photos">
-          {images.map((src, i) => (
-            <div key={src} className="lf-photo">
-              <Image src={src} alt="" fill sizes="96px" />
-              <button type="button" aria-label="Remove photo" onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}><X size={14} /></button>
-              {i === 0 && <span>Cover</span>}
+        <p className="ln-note" style={{ marginTop: 4 }}>Up to {MAX_PHOTOS}. The first photo is the cover — tap the star on another to swap.</p>
+        <div
+          className={`lf-photos ${dragging ? 'is-dragging' : ''}`}
+          onDragOver={e => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}
+        >
+          {photos.map((p, i) => (
+            <div key={p.key} className="lf-photo">
+              <Image src={p.src} alt="" fill sizes="96px" unoptimized={Boolean(p.file)} />
+              <button type="button" aria-label="Remove photo" onClick={() => removePhoto(p.key)}><X size={14} /></button>
+              {i === 0 ? (
+                <span>Cover</span>
+              ) : (
+                <button type="button" className="lf-cover-btn" aria-label="Make this the cover photo" title="Make cover" onClick={() => makeCover(p.key)}>
+                  <Star size={13} />
+                </button>
+              )}
             </div>
           ))}
-          {files.map((f, i) => (
-            <div key={f.preview} className="lf-photo">
-              <Image src={f.preview} alt="" fill sizes="96px" unoptimized />
-              <button type="button" aria-label="Remove photo" onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))}><X size={14} /></button>
-              {images.length === 0 && i === 0 && <span>Cover</span>}
-            </div>
-          ))}
-          {images.length + files.length < MAX_PHOTOS && (
+          {photos.length < MAX_PHOTOS && (
             <label className="lf-add">
               <input type="file" accept="image/*" multiple hidden onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
               <ImagePlus size={22} aria-hidden="true" />
@@ -213,6 +237,12 @@ export default function ListingForm({ kind, initial }: ListingFormProps) {
             </label>
           )}
         </div>
+        {offGenre && (
+          <p className="ln-note ln-note-warn">
+            Your shop is listed for <strong>{storeLabel}</strong>, so this may not show on your shop page.{' '}
+            <Link href="/sell/shop" className="ln-text-btn">Update your shop specialities</Link>
+          </p>
+        )}
         <label className="pd-field"><span>Description</span>
           <textarea className="ln-input" rows={4} maxLength={2000} value={description} onChange={e => setDescription(e.target.value)}
             placeholder={rent ? 'What is included, how it is delivered, any rules…' : 'Condition, age, what comes with it…'} />
@@ -286,31 +316,14 @@ export default function ListingForm({ kind, initial }: ListingFormProps) {
 
       <section className="lf-section">
         <h2>{rent ? 'Pickup location' : 'Where buyers meet you'}</h2>
-        <p className="ln-note" style={{ marginTop: 0 }}><MapPin size={14} aria-hidden="true" style={{ verticalAlign: -2 }} /> {where.address || 'Using your current area'} — drag the pin or tap the map to adjust.</p>
-        <div className="sr-map">
-          <MapView center={where} pin={where} onPinMove={c => void movePin(c)} height={200} />
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-          <button type="button" className="ln-btn ln-btn-ghost ln-btn-sm" onClick={useMyLocation}><Crosshair size={15} aria-hidden="true" /> Use my location</button>
-          {profile?.storeLocation && hasPoint(profile.storeLocation) && (
+        <LocationPicker
+          value={place}
+          fallback={where}
+          onChange={setPlace}
+          extra={profile?.storeLocation && hasPoint(profile.storeLocation) && (
             <button type="button" className="ln-btn ln-btn-ghost ln-btn-sm" onClick={() => setPlace(profile.storeLocation!)}>Use shop address</button>
           )}
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-          <div className="ln-input-icon" style={{ flex: 1 }}>
-            <Search size={16} aria-hidden="true" />
-            <input className="ln-input" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search area or landmark"
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void runSearch(); } }} />
-          </div>
-          <button type="button" className="ln-btn ln-btn-ghost" onClick={runSearch}>Find</button>
-        </div>
-        {results.length > 0 && (
-          <ul className="ln-place-list">
-            {results.map(r => (
-              <li key={`${r.lat},${r.lng}`}><button type="button" onClick={() => { setPlace(r); setResults([]); setQuery(''); }}><MapPin size={15} aria-hidden="true" /><span>{r.address}</span></button></li>
-            ))}
-          </ul>
-        )}
+        />
       </section>
 
       {editing && (
@@ -320,9 +333,9 @@ export default function ListingForm({ kind, initial }: ListingFormProps) {
       )}
 
       <div className="lf-submit">
-        {editing && <button type="button" className="ln-btn ln-btn-danger" onClick={remove}>Delete</button>}
-        <button type="submit" className="ln-btn ln-btn-primary" style={{ flex: 1 }} disabled={saving}>
-          {saving ? <><Loader2 size={18} className="ln-spin" /> Saving…</> : editing ? 'Save changes' : rent ? 'Publish rental' : 'Publish listing'}
+        {editing && <button type="button" className="ln-btn ln-btn-danger" onClick={remove} disabled={Boolean(saving)}>Delete</button>}
+        <button type="submit" className="ln-btn ln-btn-primary" style={{ flex: 1 }} disabled={Boolean(saving)}>
+          {saving ? <><Loader2 size={18} className="ln-spin" /> {saving}</> : editing ? 'Save changes' : rent ? 'Publish rental' : 'Publish listing'}
         </button>
       </div>
     </form>

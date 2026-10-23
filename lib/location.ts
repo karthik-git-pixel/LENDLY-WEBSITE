@@ -20,42 +20,70 @@ export interface DeviceFix extends Coordinates {
   timestamp: number;
 }
 
+function toFix(pos: GeolocationPosition): DeviceFix {
+  return {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude,
+    accuracy: pos.coords.accuracy,
+    timestamp: pos.timestamp,
+  };
+}
+
+function toGeoError(err: GeolocationPositionError): GeoError {
+  if (err.code === err.PERMISSION_DENIED) return new GeoError('denied', 'Location permission was denied');
+  if (err.code === err.TIMEOUT) return new GeoError('timeout', 'Finding your location took too long');
+  return new GeoError('unavailable', 'Your location is unavailable right now');
+}
+
 function readPosition(options: PositionOptions): Promise<DeviceFix> {
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve({
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        timestamp: pos.timestamp,
-      }),
-      err => {
-        if (err.code === err.PERMISSION_DENIED) reject(new GeoError('denied', 'Location permission was denied'));
-        else if (err.code === err.TIMEOUT) reject(new GeoError('timeout', 'Finding your location took too long'));
-        else reject(new GeoError('unavailable', 'Your location is unavailable right now'));
-      },
-      options
-    );
+    navigator.geolocation.getCurrentPosition(pos => resolve(toFix(pos)), err => reject(toGeoError(err)), options);
   });
 }
 
+/** Keeps listening for a sharper fix and reports each improvement, then stops */
+function refinePosition(first: DeviceFix, onBetter: (fix: DeviceFix) => void, ms = 10000, goodEnoughM = 60) {
+  let best = first.accuracy;
+  const stop = () => {
+    clearTimeout(timer);
+    navigator.geolocation.clearWatch(id);
+  };
+  const id = navigator.geolocation.watchPosition(
+    pos => {
+      const fix = toFix(pos);
+      if (fix.accuracy < best) {
+        best = fix.accuracy;
+        onBetter(fix);
+      }
+      if (best <= goodEnoughM) stop();
+    },
+    stop,
+    { enableHighAccuracy: true, timeout: ms, maximumAge: 0 }
+  );
+  const timer = setTimeout(stop, ms);
+}
+
 /**
- * A fresh fix from the device. Tries GPS first, then falls back to a
- * quicker network-based fix (Wi-Fi / cell) if GPS times out.
+ * A fresh fix from the device. Returns the first usable fix quickly (a
+ * Wi-Fi / cell fix is fine), then keeps sharpening it with GPS in the
+ * background through `onRefine`.
  */
-export async function locateDevice(): Promise<DeviceFix> {
+export async function locateDevice(onRefine?: (fix: DeviceFix) => void): Promise<DeviceFix> {
   if (typeof window === 'undefined' || !('geolocation' in navigator)) {
     throw new GeoError('unsupported', 'This browser cannot share its location');
   }
   if (!window.isSecureContext) {
     throw new GeoError('insecure', 'Location only works over HTTPS (or on localhost)');
   }
+  let fix: DeviceFix;
   try {
-    return await readPosition({ enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+    fix = await readPosition({ enableHighAccuracy: false, timeout: 8000, maximumAge: 60 * 1000 });
   } catch (err) {
     if (err instanceof GeoError && err.kind === 'denied') throw err;
-    return readPosition({ enableHighAccuracy: false, timeout: 12000, maximumAge: 5 * 60 * 1000 });
+    fix = await readPosition({ enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
   }
+  if (onRefine && fix.accuracy > 60) refinePosition(fix, onRefine);
+  return fix;
 }
 
 /**
@@ -87,12 +115,13 @@ export async function reverseGeocodePlace(lat: number, lng: number): Promise<Pla
   const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
   const hit = placeCache.get(key);
   if (hit) return hit;
-  const fallback = { area: `${lat.toFixed(3)}, ${lng.toFixed(3)}`, address: `${lat.toFixed(4)}, ${lng.toFixed(4)}` };
+  const fallback = { area: 'Current location', address: `${lat.toFixed(4)}, ${lng.toFixed(4)}` };
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&addressdetails=1&lat=${lat}&lon=${lng}`,
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&addressdetails=1&accept-language=en&lat=${lat}&lon=${lng}`,
       { headers: { Accept: 'application/json' } }
     );
+    if (!res.ok) return fallback;
     const data = await res.json();
     const a = data?.address || {};
     const area = a.suburb || a.neighbourhood || a.quarter || a.village || a.town || a.city_district || a.city || a.county;
@@ -119,7 +148,8 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
 export async function searchAddress(queryStr: string): Promise<{ lat: number; lng: number; address: string }[]> {
   if (!queryStr || queryStr.trim().length < 2) return [];
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&q=${encodeURIComponent(queryStr.trim())}&limit=6`);
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&accept-language=en&q=${encodeURIComponent(queryStr.trim())}&limit=6`);
+    if (!res.ok) return [];
     const data = await res.json();
     return data.map((item: { lat: string; lon: string; display_name: string }) => ({
       lat: parseFloat(item.lat),

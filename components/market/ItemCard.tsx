@@ -48,7 +48,7 @@ export default function ItemCard({ item, priority = false }: ItemCardProps) {
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : undefined}
           />
-          <span className={`ln-tag ${isRent ? 'ln-tag-rent' : ''}`}>{isRent ? 'RENT' : 'SALE'}</span>
+          <span className="ln-tag ln-tag-rent">RENT</span>
         </div>
         <div className="ln-item-body">
           <h3 className="ln-item-title">{item.title}</h3>

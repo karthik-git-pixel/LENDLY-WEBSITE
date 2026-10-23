@@ -7,6 +7,7 @@ import {
   DEFAULT_AREA,
   DEFAULT_LOCATION,
   GeoError,
+  getDistanceKm,
   locateDevice,
   reverseGeocodePlace,
   type Coordinates,
@@ -93,12 +94,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     const run = (async () => {
       setStatus('locating');
       try {
-        const fix = await locateDevice();
-        setDevice(fix);
+        let placed: DeviceFix | null = null;
+        const settle = async (next: DeviceFix) => {
+          setDevice(next);
+          // Only look the place up again when the sharper fix actually moved
+          if (placed && getDistanceKm(placed, next) < 0.3) {
+            setDevicePlace(prev => { if (prev) writeJSON(FIX_KEY, { ...next, ...prev }); return prev; });
+            return;
+          }
+          placed = next;
+          const place = await reverseGeocodePlace(next.lat, next.lng);
+          setDevicePlace(place);
+          writeJSON(FIX_KEY, { ...next, ...place });
+        };
+        const fix = await locateDevice(better => { void settle(better); });
         setStatus('ready');
-        const place = await reverseGeocodePlace(fix.lat, fix.lng);
-        setDevicePlace(place);
-        writeJSON(FIX_KEY, { ...fix, ...place });
+        await settle(fix);
         return fix;
       } catch (err) {
         setStatus(err instanceof GeoError ? err.kind : 'unavailable');

@@ -185,6 +185,80 @@ export function matchesCategory(
   return resolveCategory(product.category, product.subcategory).id === categoryId;
 }
 
+const LABEL_STOPWORDS = new Set(['and', 'the', 'for', 'shop', 'store', 'rental', 'rentals', 'hire', 'more']);
+
+/** "Cameras & Drones" → ["camera", "drone"] */
+function labelStems(label: string): string[] {
+  return label
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .filter(w => w.length >= 4 && !LABEL_STOPWORDS.has(w))
+    .map(w => (w.length > 4 && w.endsWith('s') ? w.slice(0, -1) : w));
+}
+
+type GenreItem = { category?: string; subcategory?: string; title?: string };
+
+/** Whether text mentions anything the store category names */
+function labelMatcher(storeCategory: string | null | undefined) {
+  const stems = labelStems(storeCategory || '');
+  return (text: string | undefined) => {
+    const t = (text || '').toLowerCase();
+    return Boolean(t) && stems.some(s => t.includes(s));
+  };
+}
+
+/** True when the store category names this listing's category, type or title (or there's no store category) */
+export function fitsShopLabel(storeCategory: string | null | undefined, item: GenreItem): boolean {
+  if (labelStems(storeCategory || '').length === 0) return true;
+  const named = labelMatcher(storeCategory);
+  return named(resolveCategory(item.category, item.subcategory).name) || named(item.subcategory) || named(item.title);
+}
+
+/** The catalogue category a store category points at — "Sound & DJ, Lighting" → Event & Sound */
+export function shopMainCategory(storeCategory: string | null | undefined): Category | undefined {
+  const label = (storeCategory || '').trim();
+  if (!label) return undefined;
+  for (const part of label.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)) {
+    const exact = CATEGORIES.find(c => c.name.toLowerCase() === part || c.subcategories.some(s => s.toLowerCase() === part));
+    if (exact) return exact;
+  }
+  const named = labelMatcher(label);
+  const pickable = CATEGORIES.filter(c => c.id !== 'other');
+  return pickable.find(c => named(c.name)) ?? pickable.find(c => c.subcategories.some(s => named(s)));
+}
+
+/**
+ * A shop's listings, minus anything outside the genre it deals in — no
+ * wedding car in a decor shop, no PS5 in a camera shop.
+ *
+ * A listing fits when the store category ("Cameras & Drones") names its
+ * category, subcategory or title, or when it's a line the shop clearly
+ * specialises in (2+ listings) next to ones the store category names.
+ * Shops without a store category keep the genre most of their listings are in.
+ */
+export function itemsInShopGenres<T extends GenreItem>(storeCategory: string | null | undefined, items: T[]): T[] {
+  const named = labelMatcher(storeCategory);
+  const catOf = (i: GenreItem) => resolveCategory(i.category, i.subcategory);
+
+  const byLabel = new Set(items.filter(i => named(catOf(i).name) || named(i.subcategory) || named(i.title)));
+
+  if (byLabel.size === 0) {
+    const counts = new Map<string, number>();
+    for (const i of items) counts.set(catOf(i).id, (counts.get(catOf(i).id) || 0) + 1);
+    const top = Math.max(0, ...counts.values());
+    return items.filter(i => counts.get(catOf(i).id) === top);
+  }
+
+  const touched = new Set([...byLabel].map(i => catOf(i).id));
+  const subCounts = new Map<string, number>();
+  for (const i of items) if (i.subcategory) subCounts.set(i.subcategory, (subCounts.get(i.subcategory) || 0) + 1);
+
+  return items.filter(i =>
+    byLabel.has(i) ||
+    (Boolean(i.subcategory) && (subCounts.get(i.subcategory!) || 0) >= 2 && touched.has(catOf(i).id))
+  );
+}
+
 // --------------------------------------------------------------------
 // Rentals
 // --------------------------------------------------------------------

@@ -26,11 +26,11 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://lendly.app";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Lendly — Borrow, Buy & Lend Nearby | Hyperlocal Marketplace",
+    default: "Lendly — Rent Nearby | Hyperlocal Rental Marketplace",
     template: "%s | Lendly",
   },
   description:
-    "Lendly is the hyperlocal marketplace for your neighbourhood. Borrow, buy, sell, and lend electronics, cameras, textbooks, and items from verified local neighbors & shops within a 1-30km radius with Direct Peer-to-Peer Deals.",
+    "Lendly is the hyperlocal rental marketplace for your neighbourhood. Rent cameras, sound systems, event gear, vehicles, and more from verified local neighbours & shops within a 1-30km radius.",
   keywords: [
     "hyperlocal marketplace",
     "buy sell rent nearby",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     siteName: "Lendly",
     title: "Lendly — Find What You Need, Right Around You",
     description:
-      "Filter listings by walking distance or city radius. Buy, rent, and connect directly with verified local sellers with Direct Peer-to-Peer Deals.",
+      "Filter rentals by walking distance or city radius. Rent from, and connect directly with, verified local shops and neighbours.",
     images: [
       {
         url: "/og-image.png",
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lendly — Borrow, Buy & Lend Nearby",
+    title: "Lendly — Rent Nearby, Spend Wisely",
     description: "Discover verified products & shops right in your neighborhood radius.",
     images: ["/og-image.png"],
     creator: "@lendlyapp",

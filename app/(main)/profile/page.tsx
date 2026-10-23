@@ -66,8 +66,6 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || DEFAULT_AVATARS[0].url);
-  const [storeName, setStoreName] = useState(profile?.storeName || '');
-  const [storeDescription, setStoreDescription] = useState(profile?.storeDescription || '');
   const [isPrintProvider, setIsPrintProvider] = useState(profile?.isPrintProvider || false);
   const [printPriceBW, setPrintPriceBW] = useState(profile?.printPriceBW?.toString() || '2');
   const [printPriceColor, setPrintPriceColor] = useState(profile?.printPriceColor?.toString() || '10');
@@ -87,8 +85,6 @@ export default function ProfilePage() {
       setDisplayName(profile.displayName || '');
       setPhone(profile.phone || '');
       setAvatarUrl(profile.avatarUrl || DEFAULT_AVATARS[0].url);
-      setStoreName(profile.storeName || '');
-      setStoreDescription(profile.storeDescription || '');
       setIsPrintProvider(profile.isPrintProvider || false);
       setPrintPriceBW(profile.printPriceBW?.toString() || '2');
       setPrintPriceColor(profile.printPriceColor?.toString() || '10');
@@ -112,10 +108,6 @@ export default function ProfilePage() {
         printPriceBW: parseFloat(printPriceBW) || 2,
         printPriceColor: parseFloat(printPriceColor) || 10,
         printStoreName: printStoreName.trim(),
-        ...(profile.isSeller ? {
-          storeName: storeName.trim(),
-          storeDescription: storeDescription.trim(),
-        } : {}),
       });
 
       await refreshProfile();
@@ -137,11 +129,23 @@ export default function ProfilePage() {
     { icon: Printer, label: 'Hyperlocal Print Hub', href: '/print', subtitle: profile.isPrintProvider ? 'Print Hub Active • Offer doorstep prints' : 'Order prints or offer local Xerox services' },
     { icon: Heart, label: 'Saved Wishlist Items', href: '/profile/saved', subtitle: `${profile.savedProducts?.length || 0} bookmarked items` },
     ...(profile.isSeller ? [
-      { icon: Package, label: 'Seller Dashboard', href: '/sell', subtitle: 'Manage active listings & inventory' },
+      { icon: Package, label: 'Seller hub', href: '/sell', subtitle: 'Listings, booking requests & earnings' },
+      { icon: Store, label: 'My shop', href: '/sell/shop', subtitle: 'Banner, logo, location & opening hours' },
     ] : [
-      { icon: Store, label: 'Become a Local Seller', href: '/profile/become-seller', subtitle: 'Start selling items nearby' },
+      { icon: Store, label: 'Rent out on Lendly', href: '/sell/onboarding', subtitle: 'Verify your ID, set up a shop, start earning' },
     ]),
-    { icon: BadgeCheck, label: 'KYC Verification', href: '/profile/kyc', subtitle: profile.kycStatus === 'VERIFIED' ? 'Identity Verified' : profile.kycStatus === 'PENDING_VERIFICATION' ? 'Verification Pending' : profile.kycStatus === 'REJECTED' ? 'Verification Rejected' : 'Verify your identity' },
+    {
+      icon: BadgeCheck,
+      label: 'Identity verification',
+      href: '/sell/verify',
+      subtitle: profile.kycStatus === 'VERIFIED' ? 'Verified'
+        : profile.kycStatus === 'PENDING_VERIFICATION' ? 'Under review'
+        : profile.kycStatus === 'REJECTED' || profile.kycStatus === 'ACTION_REQUIRED' ? 'Needs attention — tap to fix'
+        : 'Needed before you rent out',
+    },
+    ...(profile.isAdmin ? [
+      { icon: ShieldCheck, label: 'Review lender verifications', href: '/admin/kyc', subtitle: 'Admin · approve IDs and selfies' },
+    ] : []),
     { icon: Bell, label: 'Notifications', href: '/notifications', subtitle: 'Alerts & order updates' },
     { icon: MapPin, label: 'Location Settings', href: '/profile/location', subtitle: profile.location?.address?.split(',')[0] || 'Set your location' },
   ];
@@ -187,7 +191,7 @@ export default function ProfilePage() {
           <h2 style={{ fontSize: 22, fontWeight: 900, color: 'var(--foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, lineHeight: 1 }}>
             {profile.displayName}
             {profile.kycStatus === 'VERIFIED' && <span title="Verified User" style={{ display: 'flex' }}><BadgeCheck size={20} style={{ color: '#10b981', transform: 'translateY(-1px)' }} /></span>}
-            {profile.isSeller && <span title="Verified Seller" style={{ display: 'flex' }}><ShieldCheck size={20} style={{ color: 'var(--primary)', transform: 'translateY(-1px)' }} /></span>}
+            {profile.isSeller && <span title="Lender on Lendly" style={{ display: 'flex' }}><Store size={19} style={{ color: 'var(--primary)', transform: 'translateY(-1px)' }} /></span>}
           </h2>
           <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4, fontWeight: 500 }}>{profile.email}</p>
           
@@ -484,29 +488,11 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Seller Extra Fields */}
+              {/* Shop details have their own page */}
               {profile.isSeller && (
-                <>
-                  <div>
-                    <label className="input-label">Store Name</label>
-                    <input
-                      type="text"
-                      className="input-field"
-                      placeholder="e.g. Campus Tech Shop"
-                      value={storeName}
-                      onChange={(e) => setStoreName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="input-label">Store Description</label>
-                    <textarea
-                      className="input-field"
-                      placeholder="Describe your shop or selling items..."
-                      value={storeDescription}
-                      onChange={(e) => setStoreDescription(e.target.value)}
-                    />
-                  </div>
-                </>
+                <p className="ln-note" style={{ margin: 0 }}>
+                  Shop name, banner, location and hours are in <Link href="/sell/shop" style={{ color: 'var(--primary-dark)', fontWeight: 700 }}>Shop settings</Link>.
+                </p>
               )}
 
               {/* Print Service Provider Section */}

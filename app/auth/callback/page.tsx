@@ -13,67 +13,100 @@ function CallbackHandler() {
   const [statusMessage, setStatusMessage] = useState('Completing authentication...');
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let handled = false;
+
+    const safeRedirect = (url: string) => {
+      if (handled) return;
+      handled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      router.replace(url);
+    };
 
     const completeAuth = async () => {
-      // 1. Check for error parameters from OAuth provider
-      const error = searchParams.get('error');
-      const errorDescription = searchParams.get('error_description');
+      // 1. Check for error parameters from OAuth provider (query or hash)
+      const hash = typeof window !== 'undefined' ? window.location.hash : '';
+      const hashParams = hash ? new URLSearchParams(hash.replace(/^#/, '')) : null;
+      const error = searchParams.get('error') || hashParams?.get('error');
+      const errorDescription = searchParams.get('error_description') || hashParams?.get('error_description');
 
       if (error) {
         toast.error(errorDescription || 'Authentication failed');
-        router.replace('/login');
+        safeRedirect('/login');
         return;
       }
 
       const redirectTo = searchParams.get('redirect') || '/home';
 
       try {
-        // 2. Retrieve session (Supabase client auto-parses token from URL hash or exchange code)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const code = searchParams.get('code');
+        let currentSession = null;
 
-        if (sessionError) {
-          throw sessionError;
+        if (code) {
+          try {
+            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (!exchangeError && data?.session) {
+              currentSession = data.session;
+            }
+          } catch {
+            // Handled or already in-flight by detectSessionInUrl
+          }
         }
 
-        if (session?.user) {
+        if (!currentSession) {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) throw sessionError;
+          currentSession = session;
+        }
+
+        if (currentSession?.user) {
           setStatusMessage('Checking your Lendly account...');
           const profile = await getMyProfile();
 
           if (profile && profile.displayName && profile.phone) {
             toast.success(`Welcome back, ${profile.displayName.split(' ')[0]}!`);
-            router.replace(redirectTo);
+            safeRedirect(redirectTo);
           } else {
             toast.success('Welcome to Lendly! Let\'s set up your profile.');
-            router.replace('/onboarding');
+            safeRedirect('/onboarding');
           }
           return;
         }
 
         // 3. Fallback listener for auth state transition
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (session?.user) {
+          if (session?.user && !handled) {
             subscription.unsubscribe();
+            if (timeoutId) clearTimeout(timeoutId);
             setStatusMessage('Setting up your profile...');
-            const profile = await getMyProfile();
-            if (profile && profile.displayName && profile.phone) {
-              router.replace(redirectTo);
-            } else {
-              router.replace('/onboarding');
+            try {
+              const profile = await getMyProfile();
+              if (profile && profile.displayName && profile.phone) {
+                toast.success(`Welcome back, ${profile.displayName.split(' ')[0]}!`);
+                safeRedirect(redirectTo);
+              } else {
+                toast.success('Welcome to Lendly! Let\'s set up your profile.');
+                safeRedirect('/onboarding');
+              }
+            } catch (err) {
+              safeRedirect('/onboarding');
             }
           }
         });
 
-        // 4. Set a 6-second fallback in case nothing triggers
+        // 4. Set a 7-second fallback in case nothing triggers
         timeoutId = setTimeout(() => {
           subscription.unsubscribe();
-          router.replace('/login');
-        }, 6000);
+          if (!handled) {
+            toast.error('Authentication session timed out. Please try again.');
+            safeRedirect('/login');
+          }
+        }, 7000);
 
       } catch (err: any) {
         console.error('Auth callback error:', err);
         toast.error(err.message || 'Authentication error');
-        router.replace('/login');
+        safeRedirect('/login');
       }
     };
 

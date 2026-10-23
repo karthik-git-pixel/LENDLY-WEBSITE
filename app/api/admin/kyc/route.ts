@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/verify-auth';
 import { decryptData } from '@/lib/encryption';
 import { getUserSupabase } from '@/lib/supabase-server';
+import { idTypeInfo, type KycRecord } from '@/lib/kyc';
 
 const maskString = (str: string | null | undefined, showLast = 4) => {
   if (!str) return 'N/A';
@@ -29,10 +30,8 @@ interface KycRow {
   display_name: string;
   kyc_status: string;
   submitted_at: string;
-  data: {
-    personal?: unknown;
-    address?: unknown;
-    identity?: { panNumber?: string; governmentIdNumber?: string | null };
+  data: KycRecord & {
+    /** Older (v1) submissions */
     bank?: { accountHolder?: string; accountNumber?: string; ifsc?: string };
     business?: { businessName?: string; businessPan?: string | null; gstin?: string } | null;
   };
@@ -43,32 +42,50 @@ export async function GET(request: Request) {
     const db = await adminClient(request);
     const { data, error } = await db.rpc('admin_list_kyc');
     if (error) return NextResponse.json({ error: error.message }, { status: 403 });
+    const rows = (data || []) as KycRow[];
 
-    const applications = ((data || []) as KycRow[]).map(row => ({
-      uid: row.user_id,
-      email: row.email,
-      displayName: row.display_name,
-      kycStatus: row.kyc_status,
-      kycData: {
-        personal: row.data.personal,
-        address: row.data.address,
-        identity: {
-          panNumberMasked: maskString(decryptData(row.data.identity?.panNumber || '')),
-          governmentIdMasked: row.data.identity?.governmentIdNumber ? maskString(decryptData(row.data.identity.governmentIdNumber)) : 'N/A',
-        },
-        bank: {
-          accountHolder: row.data.bank?.accountHolder,
-          accountNumberMasked: maskString(decryptData(row.data.bank?.accountNumber || '')),
-          ifsc: row.data.bank?.ifsc,
-        },
-        business: row.data.business ? {
-          businessName: row.data.business.businessName,
-          businessPanMasked: row.data.business.businessPan ? maskString(decryptData(row.data.business.businessPan)) : 'N/A',
-          gstin: row.data.business.gstin,
-        } : null,
+    // Ten-minute links to the private selfie and ID photos (storage lets admins read them)
+    const paths = rows.flatMap(r => [r.data.documents?.selfie, r.data.documents?.idFront, r.data.documents?.idBack])
+      .filter((p): p is string => Boolean(p));
+    const signed = paths.length ? (await db.storage.from('kyc-docs').createSignedUrls(paths, 600)).data || [] : [];
+    const urlFor = new Map(signed.filter(s => s.signedUrl).map(s => [s.path, s.signedUrl]));
+    const doc = (path?: string) => (path ? { url: urlFor.get(path) || null, isPdf: /\.pdf$/i.test(path) } : null);
+
+    const applications = rows.map(row => {
+      const { personal, address, identity, documents } = row.data;
+      const aadhaar = identity?.aadhaarNumber || identity?.governmentIdNumber;
+      return {
+        uid: row.user_id,
+        email: personal?.email || row.email,
+        displayName: row.display_name,
         submittedAt: row.submitted_at,
-      },
-    }));
+        personal: {
+          fullName: personal?.fullName || row.display_name,
+          phone: personal?.phone || '',
+          dob: personal?.dob || '',
+        },
+        address: address
+          ? [address.line || address.address, address.city || address.district, address.state].filter(Boolean).join(', ') + (address.pinCode ? ` – ${address.pinCode}` : '')
+          : '',
+        identity: {
+          idType: identity?.idType ? idTypeInfo(identity.idType).label : 'Not given',
+          aadhaarMasked: identity?.aadhaarLast4 ? `•••• •••• ${identity.aadhaarLast4}` : aadhaar ? maskString(decryptData(aadhaar)) : 'N/A',
+          idNumberMasked: identity?.idNumber ? maskString(decryptData(identity.idNumber)) : null,
+          panMasked: identity?.panNumber ? maskString(decryptData(identity.panNumber)) : null,
+        },
+        documents: { selfie: doc(documents?.selfie), idFront: doc(documents?.idFront), idBack: doc(documents?.idBack) },
+        bank: row.data.bank ? {
+          accountHolder: row.data.bank.accountHolder || '',
+          accountNumberMasked: maskString(decryptData(row.data.bank.accountNumber || '')),
+          ifsc: row.data.bank.ifsc || '',
+        } : null,
+        business: row.data.business ? {
+          businessName: row.data.business.businessName || '',
+          businessPanMasked: row.data.business.businessPan ? maskString(decryptData(row.data.business.businessPan)) : 'N/A',
+          gstin: row.data.business.gstin || '',
+        } : null,
+      };
+    });
     return NextResponse.json({ applications });
   } catch (error) {
     if (error instanceof NextResponse) return error;

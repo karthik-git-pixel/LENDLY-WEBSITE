@@ -16,7 +16,7 @@ import {
 import { openChat } from '@/lib/chat';
 import { formatDistance, getDistanceKm } from '@/lib/location';
 import { getOpenState } from '@/lib/store-hours';
-import { rentUnitInfo } from '@/lib/catalog';
+import { itemsInShopGenres, rentUnitInfo } from '@/lib/catalog';
 import { formatDate } from '@/lib/time';
 import { avatarFor } from '@/components/AppHeader';
 
@@ -38,7 +38,8 @@ export default function ShopPage({ params }: { params: Promise<{ id: string }> }
     Promise.all([getUserProfile(id), getProductsBySeller(id), getReviewsForSeller(id)]).then(([s, p, r]) => {
       if (cancelled) return;
       setShop(s);
-      setItems(p.filter(x => x.status !== 'paused'));
+      // Rentals only, and only what fits the genre this shop deals in
+      setItems(itemsInShopGenres(s?.storeCategory, p.filter(x => x.status !== 'paused' && x.listingType === 'rent')));
       setReviews(r);
       setLoaded(true);
     });
@@ -70,7 +71,7 @@ export default function ShopPage({ params }: { params: Promise<{ id: string }> }
   const open = getOpenState(shop.storeHours);
   const cover = shop.coverUrl || items.find(i => i.images?.length)?.images[0] || '';
   const isMine = profile?.uid === shop.uid;
-  const rentals = items.filter(i => i.listingType === 'rent').length;
+  const rentals = items.length;
 
   const chat = async () => {
     if (!requireAuth(undefined, 'Log in to chat with this shop')) return;
@@ -140,10 +141,19 @@ export default function ShopPage({ params }: { params: Promise<{ id: string }> }
             </div>
           )}
           {isMine && (
-            <div style={{ display: 'flex', gap: 10, margin: '12px 0 4px' }}>
-              <Link href="/sell" className="ln-btn ln-btn-primary" style={{ flex: 1 }}>Open seller hub</Link>
-              <Link href="/profile" className="ln-btn ln-btn-ghost">Edit shop</Link>
-            </div>
+            <>
+              <div style={{ display: 'flex', gap: 10, margin: '12px 0 4px' }}>
+                <Link href="/sell" className="ln-btn ln-btn-primary" style={{ flex: 1 }}>Open seller hub</Link>
+                <Link href="/sell/shop" className="ln-btn ln-btn-ghost">Edit shop</Link>
+              </div>
+              {shop.kycStatus !== 'VERIFIED' && (
+                <p className="ln-note">
+                  Only you see this: {shop.kycStatus === 'PENDING_VERIFICATION'
+                    ? 'your ID is under review — the Verified badge appears once it’s approved.'
+                    : <>renters trust verified shops more. <Link href="/sell/verify" className="ln-text-btn">Verify your identity</Link></>}
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -161,19 +171,19 @@ export default function ShopPage({ params }: { params: Promise<{ id: string }> }
               <Link key={p.id} href={`/product/${p.id}`} className="sp-item">
                 <span className="sp-item-img">
                   {p.images?.[0] && <Image src={p.images[0]} alt={p.title} fill sizes="(max-width: 767px) 50vw, 25vw" />}
-                  <span className={`ln-tag ${p.listingType === 'rent' ? 'ln-tag-rent' : ''}`}>{p.listingType === 'rent' ? 'RENT' : 'SALE'}</span>
+                  <span className="ln-tag ln-tag-rent">RENT</span>
                 </span>
                 <span className="sp-item-body">
                   <h3>{p.title}</h3>
                   <span className="sp-item-price">
                     ₹{Math.round(p.price).toLocaleString('en-IN')}
-                    {p.listingType === 'rent' && <small> / {rentUnitInfo(p.rentDuration).short}</small>}
+                    <small> / {rentUnitInfo(p.rentDuration).short}</small>
                   </span>
                   <span className="sp-item-foot">
                     <span style={{ fontSize: 12, color: 'var(--ln-sub)' }}>
                       {p.status === 'available' ? (p.capacity ? `Up to ${p.capacity} guests` : p.condition || 'Available') : p.status}
                     </span>
-                    <span className="sp-add">{p.listingType === 'rent' ? 'Book' : 'Buy'}</span>
+                    <span className="sp-add">Book</span>
                   </span>
                 </span>
               </Link>

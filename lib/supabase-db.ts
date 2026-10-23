@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { getCached, setCached, clearCache } from './cache';
 import type { ListingType, RentUnit } from './catalog';
+import type { KycRecord } from './kyc';
 
 // ==================== TYPES ====================
 export interface GeoPoint {
@@ -667,6 +668,30 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
   if (error) throw new Error(dbErrorMessage(error, 'Could not update your profile'));
 }
 
+export interface KycSubmission {
+  status: string;
+  rejectionReason: string;
+  /** Plain fields as sent; Aadhaar/ID/PAN numbers are encrypted (aadhaarLast4 is not) */
+  data: KycRecord;
+  submittedAt: string;
+}
+
+/** The signed-in user's own verification, to show its status or prefill a resubmission */
+export async function getMyKycSubmission(uid: string): Promise<KycSubmission | null> {
+  const { data, error } = await supabase
+    .from('kyc_submissions')
+    .select('status, rejection_reason, data, submitted_at')
+    .eq('user_id', uid)
+    .maybeSingle<{ status: string | null; rejection_reason: string | null; data: KycRecord | null; submitted_at: string | null }>();
+  if (error || !data) return null;
+  return {
+    status: data.status || 'PENDING_VERIFICATION',
+    rejectionReason: data.rejection_reason || '',
+    data: data.data || {},
+    submittedAt: data.submitted_at || '',
+  };
+}
+
 export async function toggleSavedProduct(uid: string, productId: string, current: string[]): Promise<string[]> {
   const updated = current.includes(productId)
     ? current.filter(id => id !== productId)
@@ -730,6 +755,10 @@ export async function createProduct(data: Omit<Product, 'id' | 'createdAt' | 'up
   };
 
   const { data: inserted, error } = await supabase.from('products').insert(payload).select('id').single();
+  if (error?.code === '42501') {
+    // Row-level security: listing needs an identity verification on file
+    throw new Error('Verify your identity before adding rentals — open Seller hub → Verify.');
+  }
   if (error || !inserted) {
     throw new Error(dbErrorMessage(error, 'Could not publish the listing'));
   }
@@ -800,12 +829,14 @@ export async function getAllAvailableProducts(): Promise<Product[]> {
     .from('products')
     .select('*')
     .eq('status', 'available')
+    .eq('listing_type', 'rent')
     .order('created_at', { ascending: false })
     .limit(1000)
     .returns<ProductRow[]>());
 
+  // Lendly is rentals only — nothing listed for sale is shown
   let rows = res && !res.error && res.data ? res.data : [];
-  if (rows.length === 0) rows = (await loadDemo()).products;
+  if (rows.length === 0) rows = (await loadDemo()).products.filter(p => p.listing_type === 'rent');
   const products = rows.map(mapProduct);
   setCached('all_available_products', products);
   return products;

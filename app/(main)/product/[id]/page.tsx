@@ -172,7 +172,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         <nav className="pd-crumbs" aria-label="Breadcrumb">
           <Link href="/home">Home</Link>
           <span aria-hidden="true">/</span>
-          <Link href={`/home?type=${rent ? 'rent' : 'sale'}${category ? `&category=${category.id}` : ''}`}>{category?.name || product.category}</Link>
+          <Link href={`/home${category ? `?category=${category.id}` : ''}`}>{category?.name || product.category}</Link>
           {product.subcategory && <><span aria-hidden="true">/</span><span>{product.subcategory}</span></>}
         </nav>
         <div className="pd-topbar-actions">

@@ -2,8 +2,9 @@ import { supabase } from './supabase';
 
 /**
  * Uploads go to Supabase Storage (public "media" bucket for photos, private
- * "print-docs" bucket for print jobs). If Cloudinary is configured, photos
- * go there instead via a signed upload.
+ * "print-docs" bucket for print jobs, private "kyc-docs" bucket for lender
+ * ID checks). If Cloudinary is configured, photos go there instead via a
+ * signed upload — identity documents never do.
  */
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
@@ -185,6 +186,41 @@ export async function uploadPrintDocument(file: File, providerId: string, buyerI
 /** Short-lived link to a print document */
 export async function getPrintDocumentUrl(path: string): Promise<string> {
   const { data, error } = await supabase.storage.from('print-docs').createSignedUrl(path, 60 * 60);
+  if (error || !data) throw new Error(error?.message || 'Could not open the document');
+  return data.signedUrl;
+}
+
+export type KycDocumentKind = 'selfie' | 'id-front' | 'id-back';
+
+/**
+ * Stores an identity document in the private "kyc-docs" bucket and returns
+ * its path. Only the owner and admins can open it, through signed links.
+ */
+export async function uploadKycDocument(file: File, userId: string, kind: KycDocumentKind): Promise<string> {
+  const isImage = file.type.startsWith('image/');
+  if (kind === 'selfie' && !isImage) throw new Error('Your selfie needs to be a photo');
+  if (!isImage && file.type !== 'application/pdf') throw new Error(`${file.name} isn't a photo or PDF`);
+
+  const processed = isImage ? await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.86 }) : file;
+  if (processed.size > MAX_IMAGE_BYTES) throw new Error(`${file.name} is larger than 10 MB`);
+
+  const path = `${userId}/${kind}-${uniqueName(processed)}`;
+  const { error } = await supabase.storage.from('kyc-docs').upload(path, processed, {
+    contentType: processed.type || 'application/octet-stream',
+    upsert: false,
+  });
+  if (error) {
+    if (/bucket not found/i.test(error.message)) {
+      throw new Error('Verification storage is not set up yet — run supabase/schema.sql in the Supabase SQL editor.');
+    }
+    throw new Error(error.message || 'Upload failed');
+  }
+  return path;
+}
+
+/** Ten-minute link to an identity document */
+export async function getKycDocumentUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from('kyc-docs').createSignedUrl(path, 10 * 60);
   if (error || !data) throw new Error(error?.message || 'Could not open the document');
   return data.signedUrl;
 }

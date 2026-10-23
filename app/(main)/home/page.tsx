@@ -28,7 +28,7 @@ const FRESH_DAYS = 14;
 
 function gridTitle(f: MarketFilters): string {
   const cat = f.sub || getCategory(f.category)?.name;
-  const noun = f.type === 'rent' ? 'rentals' : f.type === 'sale' ? 'deals' : 'picks';
+  const noun = 'rentals';
   const what = cat ? `${cat} ${noun}` : noun;
   switch (f.sort) {
     case 'nearest': return `Nearest ${what}`;
@@ -62,7 +62,6 @@ function HomeContent() {
   const shops = useMemo(() => market.nearbyShops.filter(s => {
     if (filters.verified && !s.isVerified) return false;
     if (filters.type === 'rent' && s.rentCount === 0) return false;
-    if (filters.type === 'sale' && s.listingCount - s.rentCount === 0) return false;
     if (filters.category !== 'all') {
       return market.nearbyItems.some(i => i.sellerId === s.uid && matchesCategory(i, filters.category));
     }
@@ -93,12 +92,15 @@ function HomeContent() {
       <div className="ln-shell">
         <h1 className="ln-visually-hidden">Lendly — rent and buy from neighbours near you</h1>
         <SearchBar />
-        <CategoryRail
-          view={filters.type}
-          active={filters.category}
-          onSelect={category => setFilters({ category, sub: null })}
-        />
-        {filters.type === 'all' && filters.category === 'all' && <HeroBanner />}
+        {/* Banner first on phones; from tablet up the categories lead (see .ln-home-intro) */}
+        <div className="ln-home-intro">
+          {filters.type === 'all' && filters.category === 'all' && <HeroBanner />}
+          <CategoryRail
+            view={filters.type}
+            active={filters.category}
+            onSelect={category => setFilters({ category, sub: null })}
+          />
+        </div>
 
         {filters.sub && (
           <div className="ln-active-sub">

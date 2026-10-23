@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Circle, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { Crosshair, Loader2, Minus, Plus } from 'lucide-react';
@@ -40,6 +40,13 @@ interface MapViewProps {
   onPinMove?: (c: Coordinates) => void;
   className?: string;
 }
+
+// OpenStreetMap's own tiles need no key (light use, with attribution). CARTO's
+// free basemaps now answer every request with an "API key required" tile. For
+// heavier traffic, point NEXT_PUBLIC_MAP_TILE_URL at a keyed tile provider.
+const TILE_URL = process.env.NEXT_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTRIBUTION = process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION
+  || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const esc = (s: unknown) =>
   String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
@@ -100,8 +107,11 @@ function shopIcon(shop: MapShop): L.DivIcon {
   });
 }
 
-/** Moves the camera when `focus` changes; leaves it alone otherwise */
-function Camera({ focus, initialZoom }: { focus?: (Coordinates & { zoom?: number }) | null; initialZoom: number }) {
+/**
+ * Moves the camera when `focus` changes, and when the map's `center` moves
+ * (e.g. the device fix arrives after the first paint); leaves it alone otherwise.
+ */
+function Camera({ focus, center, initialZoom }: { focus?: (Coordinates & { zoom?: number }) | null; center: Coordinates; initialZoom: number }) {
   const map = useMap();
   const lat = focus?.lat;
   const lng = focus?.lng;
@@ -110,6 +120,25 @@ function Camera({ focus, initialZoom }: { focus?: (Coordinates & { zoom?: number
     if (lat === undefined || lng === undefined) return;
     map.flyTo([lat, lng], zoom ?? Math.max(map.getZoom(), initialZoom), { duration: 0.8 });
   }, [lat, lng, zoom, map, initialZoom]);
+
+  const cLat = center.lat;
+  const cLng = center.lng;
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    map.flyTo([cLat, cLng], map.getZoom(), { duration: 0.8 });
+  }, [cLat, cLng, map]);
+
+  // Tabs, sheets and responsive layouts resize the box after Leaflet measured it
+  useEffect(() => {
+    const el = map.getContainer();
+    const fit = () => map.invalidateSize();
+    const t = setTimeout(fit, 0);
+    if (typeof ResizeObserver === 'undefined') return () => clearTimeout(t);
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => { clearTimeout(t); ro.disconnect(); };
+  }, [map]);
   return null;
 }
 
@@ -195,6 +224,14 @@ export default function MapView({
     return [...byKey.entries()].map(([key, items]) => ({ key, items, lat: items[0].location.lat, lng: items[0].location.lng }));
   }, [products]);
 
+  // Icons are rebuilt only when their data changes, so markers don't flicker
+  // (or drop an open popup) on every unrelated render
+  const shopIcons = useMemo(() => new Map(shops.map(shop => [shop.uid, shopIcon(shop)])), [shops]);
+  const groupIcons = useMemo(
+    () => new Map(groups.map(g => [g.key, [productIcon(g.items, false), productIcon(g.items, true)] as const])),
+    [groups]
+  );
+
   return (
     <div className={`lm-map ${className || ''}`} style={{ height }}>
       <MapContainer
@@ -205,11 +242,8 @@ export default function MapView({
         scrollWheelZoom
         attributionControl
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        />
-        <Camera focus={focus} initialZoom={initialZoom} />
+        <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} maxZoom={19} />
+        <Camera focus={focus} center={center} initialZoom={initialZoom} />
         <Controls onLocate={onLocate} locating={locating} />
 
         {radiusKm && (
@@ -247,7 +281,7 @@ export default function MapView({
           const where = shop.storeLocation;
           if (!where || (!where.lat && !where.lng)) return null;
           return (
-            <Marker key={shop.uid} position={[where.lat, where.lng]} icon={shopIcon(shop)}>
+            <Marker key={shop.uid} position={[where.lat, where.lng]} icon={shopIcons.get(shop.uid)!}>
               <Popup>
                 <div className="lm-popup">
                   <strong>{shop.storeName || shop.displayName}</strong>
@@ -259,12 +293,14 @@ export default function MapView({
           );
         })}
 
-        {groups.map(group => (
+        {groups.map(group => {
+          const selected = group.items.some(i => i.id === selectedProductId);
+          return (
           <Marker
             key={group.key}
             position={[group.lat, group.lng]}
-            icon={productIcon(group.items, group.items.some(i => i.id === selectedProductId))}
-            zIndexOffset={group.items.some(i => i.id === selectedProductId) ? 800 : 0}
+            icon={groupIcons.get(group.key)![selected ? 1 : 0]}
+            zIndexOffset={selected ? 800 : 0}
           >
             <Popup>
               <div className="lm-popup lm-popup-list">
@@ -288,7 +324,8 @@ export default function MapView({
               </div>
             </Popup>
           </Marker>
-        ))}
+          );
+        })}
       </MapContainer>
     </div>
   );

@@ -4,19 +4,25 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, FileText, IndianRupee, Pause, Pencil, Play, Plus, Printer, Trash2, Wallet } from 'lucide-react';
+import {
+  BadgeCheck, Camera, Copy, Eye, FileText, IndianRupee, Loader2, Pause, Pencil, Play, Plus, Printer, ShieldCheck, Trash2, Wallet,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth-context';
 import {
   deleteProduct, getOrdersBySeller, getPrintOrdersByProvider, getProductsBySeller, requestWithdrawal, updatePrintOrder,
-  updateProduct, updateUserProfile, type Order, type PrintOrder, type Product,
+  updateProduct, updateUserProfile, type Order, type PrintOrder, type Product, type UserProfile,
 } from '@/lib/supabase-db';
-import { getPrintDocumentUrl } from '@/lib/upload';
+import { getPrintDocumentUrl, uploadImage } from '@/lib/upload';
 import { formatPrice } from '@/lib/catalog';
 import { formatDate } from '@/lib/time';
+import { areaName } from '@/lib/location';
+import { getOpenState } from '@/lib/store-hours';
+import { kycSubmitted, shopReady } from '@/lib/kyc';
 import Sheet from '@/components/ui/Sheet';
+import { avatarFor } from '@/components/AppHeader';
 
-type Tab = 'rent' | 'sale' | 'print';
+type Tab = 'rent' | 'print';
 
 const NEXT_PRINT_STEP: Record<string, { status: string; label: string }[]> = {
   pending: [{ status: 'accepted', label: 'Accept' }, { status: 'declined', label: 'Decline' }],
@@ -33,7 +39,7 @@ function SellerHub() {
   const router = useRouter();
   const params = useSearchParams();
   const { user, profile, loading, refreshProfile } = useAuth();
-  const [tab, setTab] = useState<Tab>(params.get('tab') === 'sale' ? 'sale' : params.get('tab') === 'print' ? 'print' : 'rent');
+  const [tab, setTab] = useState<Tab>(params.get('tab') === 'print' ? 'print' : 'rent');
   const [products, setProducts] = useState<Product[] | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [prints, setPrints] = useState<PrintOrder[]>([]);
@@ -55,8 +61,15 @@ function SellerHub() {
 
   useEffect(() => { load(); }, [load]);
 
-  const listings = useMemo(() => (products || []).filter(p => (tab === 'rent' ? p.listingType === 'rent' : p.listingType !== 'rent')), [products, tab]);
-  const tabOrders = orders.filter(o => (tab === 'rent' ? o.orderType === 'rent' : o.orderType !== 'rent'));
+  // Brand-new lenders start with the 3-step setup; existing shops keep their hub
+  useEffect(() => {
+    if (!profile || products === null) return;
+    const fresh = products.length === 0 && !profile.isPrintProvider;
+    if (fresh && !(kycSubmitted(profile) && shopReady(profile))) router.replace('/sell/onboarding');
+  }, [profile, products, router]);
+
+  const listings = useMemo(() => (products || []).filter(p => p.listingType === 'rent'), [products]);
+  const tabOrders = orders.filter(o => o.orderType === 'rent');
   const pending = tabOrders.filter(o => o.status === 'pending').length;
   const upcoming = tabOrders.filter(o => o.status === 'accepted' || o.status === 'active').length;
   const collected = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.amount, 0);
@@ -84,9 +97,11 @@ function SellerHub() {
     <div className="ln-page">
       <div className="top-header">
         <h1 style={{ fontSize: 18, fontWeight: 800 }}>Seller hub</h1>
-        <Link href={`/sell/new${tab === 'print' ? '' : `?type=${tab}`}`} className="ln-btn ln-btn-primary ln-btn-sm"><Plus size={16} aria-hidden="true" /> New listing</Link>
+        <Link href="/sell/new" className="ln-btn ln-btn-primary ln-btn-sm"><Plus size={16} aria-hidden="true" /> New listing</Link>
       </div>
       <div className="ln-shell" style={{ paddingTop: 14 }}>
+        {profile && products && <MyShopCard profile={profile} products={listings} />}
+
         <div className="sh-stats">
           <div><span>Requests waiting</span><strong>{orders.filter(o => o.status === 'pending').length}</strong></div>
           <div><span>Active listings</span><strong>{(products || []).filter(p => p.status === 'available').length}</strong></div>
@@ -96,14 +111,13 @@ function SellerHub() {
 
         <div className="ln-tabs" role="tablist" style={{ marginTop: 16 }}>
           <button type="button" role="tab" className="ln-tab" aria-selected={tab === 'rent'} onClick={() => setTab('rent')}>Rentals</button>
-          <button type="button" role="tab" className="ln-tab" aria-selected={tab === 'sale'} onClick={() => setTab('sale')}>Sales</button>
           <button type="button" role="tab" className="ln-tab" aria-selected={tab === 'print'} onClick={() => setTab('print')}><Printer size={15} aria-hidden="true" /> Print jobs</button>
         </div>
 
         {tab !== 'print' ? (
           <>
             <Link href="/profile/orders?role=seller" className="sh-banner">
-              <span><strong>{pending} new {tab === 'rent' ? 'booking' : 'purchase'} request{pending === 1 ? '' : 's'}</strong> · {upcoming} {tab === 'rent' ? 'confirmed or out on rent' : 'reserved'}</span>
+              <span><strong>{pending} new booking request{pending === 1 ? '' : 's'}</strong> · {upcoming} confirmed or out on rent</span>
               <span className="ln-text-btn">Manage →</span>
             </Link>
 
@@ -111,9 +125,9 @@ function SellerHub() {
               <div className="ln-skel" style={{ height: 180, borderRadius: 16, marginTop: 14 }} />
             ) : listings.length === 0 ? (
               <div className="ln-empty">
-                <h2>{tab === 'rent' ? 'Nothing for rent yet' : 'Nothing for sale yet'}</h2>
-                <p>{tab === 'rent' ? 'Halls, speakers, cameras, bikes — list what neighbours can borrow.' : 'Turn things you no longer need into cash.'}</p>
-                <div className="ln-empty-actions"><Link href={`/sell/new?type=${tab}`} className="ln-btn ln-btn-primary"><Plus size={16} aria-hidden="true" /> {tab === 'rent' ? 'Rent something out' : 'Sell something'}</Link></div>
+                <h2>Nothing for rent yet</h2>
+                <p>Halls, speakers, cameras, bikes — list what neighbours can borrow.</p>
+                <div className="ln-empty-actions"><Link href="/sell/new" className="ln-btn ln-btn-primary"><Plus size={16} aria-hidden="true" /> Rent something out</Link></div>
               </div>
             ) : (
               <ul className="od-list">
@@ -130,6 +144,7 @@ function SellerHub() {
                     <div className="od-actions">
                       <Link href={`/product/${p.id}`} className="ln-btn ln-btn-ghost ln-btn-sm"><Eye size={15} aria-hidden="true" /> View</Link>
                       <Link href={`/sell/${p.id}/edit`} className="ln-btn ln-btn-ghost ln-btn-sm"><Pencil size={15} aria-hidden="true" /> Edit</Link>
+                      <Link href={`/sell/new?from=${p.id}`} className="ln-btn ln-btn-ghost ln-btn-sm" aria-label={`Copy ${p.title} into a new listing`}><Copy size={15} aria-hidden="true" /> Copy</Link>
                       {(p.status === 'available' || p.status === 'paused') && (
                         <button type="button" className="ln-btn ln-btn-ghost ln-btn-sm" onClick={() => togglePause(p)}>
                           {p.status === 'paused' ? <><Play size={15} aria-hidden="true" /> Resume</> : <><Pause size={15} aria-hidden="true" /> Pause</>}
@@ -149,6 +164,83 @@ function SellerHub() {
 
       <WithdrawSheet open={withdrawOpen} onClose={() => setWithdrawOpen(false)} balance={profile?.earnings || 0} onDone={refreshProfile} />
     </div>
+  );
+}
+
+const KYC_BADGE: Record<string, { tone: 'good' | 'pending' | 'bad'; label: string }> = {
+  VERIFIED: { tone: 'good', label: 'Verified' },
+  PENDING_VERIFICATION: { tone: 'pending', label: 'ID under review' },
+  REJECTED: { tone: 'bad', label: 'Verification needs attention' },
+  ACTION_REQUIRED: { tone: 'bad', label: 'Verification needs attention' },
+};
+
+/** The lender's storefront as renters see it, with quick fixes for anything missing */
+function MyShopCard({ profile, products }: { profile: UserProfile; products: Product[] }) {
+  const { refreshProfile } = useAuth();
+  const [uploading, setUploading] = useState(false);
+  const name = profile.storeName || profile.displayName || 'Your shop';
+  const cover = profile.coverUrl || products.find(p => p.images?.length)?.images[0] || '';
+  const open = getOpenState(profile.storeHours);
+  const badge = KYC_BADGE[profile.kycStatus || ''] ?? { tone: 'bad', label: 'Not verified' };
+  const verified = profile.kycStatus === 'VERIFIED';
+  const needsFix = profile.kycStatus === 'REJECTED' || profile.kycStatus === 'ACTION_REQUIRED';
+  const meta = [profile.storeCategory, areaName(profile.storeLocation?.address), open?.label].filter(Boolean).join(' · ');
+
+  const changeBanner = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, profile.uid, 'cover');
+      await updateUserProfile(profile.uid, { coverUrl: url });
+      await refreshProfile();
+      toast.success('Banner updated');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Couldn’t update the banner');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <section className="sh-shop" aria-label="Your shop">
+      <div className="sh-shop-cover">
+        {cover && <Image src={cover} alt="" fill sizes="(max-width: 1280px) 100vw, 1280px" />}
+        <span className={`sh-kyc is-${badge.tone}`}>
+          {verified ? <BadgeCheck size={13} aria-hidden="true" /> : <ShieldCheck size={13} aria-hidden="true" />} {badge.label}
+        </span>
+        <label className="ss-pill sh-shop-banner-btn">
+          <input type="file" accept="image/*" hidden disabled={uploading} onChange={e => { void changeBanner(e.target.files?.[0]); e.target.value = ''; }} />
+          {uploading ? <Loader2 size={14} className="ln-spin" aria-hidden="true" /> : <Camera size={14} aria-hidden="true" />}
+          {uploading ? 'Uploading…' : profile.coverUrl ? 'Change banner' : 'Add banner'}
+        </label>
+      </div>
+      <div className="sh-shop-body">
+        <Image src={avatarFor(name, profile.avatarUrl)} alt="" width={64} height={64} unoptimized className="sh-shop-logo" />
+        <div className="sh-shop-text">
+          <h2>{name}{verified && <BadgeCheck size={17} className="ln-verified" aria-label="Verified shop" />}</h2>
+          <p>{meta || 'Add your category, pickup location and hours'}</p>
+        </div>
+        <div className="sh-shop-actions">
+          <Link href="/sell/shop" className="ln-btn ln-btn-ghost ln-btn-sm"><Pencil size={15} aria-hidden="true" /> Edit shop</Link>
+          <Link href={`/seller/${profile.uid}`} className="ln-btn ln-btn-ghost ln-btn-sm"><Eye size={15} aria-hidden="true" /> View</Link>
+        </div>
+      </div>
+      {!kycSubmitted(profile) ? (
+        <Link href="/sell/verify" className={`sh-alert ${needsFix ? 'is-bad' : ''}`}>
+          <span>
+            {needsFix
+              ? `Verification needs attention${profile.kycRejectionReason ? ` — ${profile.kycRejectionReason}` : ''}. Fix it to add new rentals.`
+              : 'Verify your identity to add new rentals'}
+          </span>
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : !shopReady(profile) ? (
+        <Link href="/sell/shop" className="sh-alert">
+          <span>Add your shop name and pickup location so renters can find you</span>
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : null}
+    </section>
   );
 }
 
