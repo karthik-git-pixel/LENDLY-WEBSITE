@@ -11,9 +11,9 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
-Lendly is a sleek, hyper-local marketplace designed specifically for students and local shop owners. It enables users to **buy, sell, and rent items** within a strict 2-5km radius, fostering a community-driven economy built on trust, proximity, and instant transactions.
+Lendly is a sleek, hyper-local marketplace designed for students and local communities. It enables users to **buy, sell, and rent items and services** within their immediate vicinity, fostering a community-driven economy built on proximity, verified trust, and instant transactions.
 
 </div>
 
@@ -21,14 +21,14 @@ Lendly is a sleek, hyper-local marketplace designed specifically for students an
 
 ## ✨ Features
 
-- **📍 Hyper-Local Discovery**: Uses precise geolocation to show you items and services available right in your immediate vicinity.
-- **🛒 Buy, Sell & Rent**: A flexible marketplace. Buy items outright, list your own goods, or rent out equipment for temporary use.
-- **🏪 Premium Seller Dashboard**: Dedicated tools for local sellers to manage inventory, track live orders, and monitor their wallet balance.
-- **💬 Real-Time Chat**: Integrated Firebase-powered messaging system allowing buyers and sellers to negotiate and communicate instantly.
-- **💳 Digital Wallet**: A built-in virtual wallet for tracking earnings, processing refunds, and managing platform credit.
-- **📷 QR Code Verification**: Ensuring secure order handoffs. Buyers scan the seller's QR code upon pickup to finalize the transaction securely.
-- **🗺️ Interactive Map View**: Visualize exactly where products are located around you using an interactive Leaflet map interface.
-- **🎨 Premium UI/UX**: Lendly's orange & navy brand system — Figtree display type, a floating mobile nav, image-forward listing cards and a live "near you" hero.
+- **📍 Hyper-Local Discovery**: Precise location-based discovery to show items and services available right near you.
+- **🛒 Buy, Sell & Rent**: Complete marketplace flexibility — buy items outright, list goods for sale or rent equipment.
+- **🏪 Local Shopfronts & Essentials**: Explore top-rated local shops, event equipment, photography gear, audio systems, and local print services.
+- **💬 Direct In-App Chat**: Built-in messaging between buyers and sellers to negotiate and coordinate handoffs.
+- **💳 Secure Checkout & Razorpay Integration**: Fast order creation and verification for platform orders.
+- **📷 QR Code Verification**: Safe and instant handoff verification for order pickup and return.
+- **🗺️ Interactive Map View**: Visualize products, shops, and providers on an interactive Leaflet map interface.
+- **🎨 Modern Design System**: Responsive mobile-first UI with responsive desktop sidebar, interactive bottom sheets, and rich visual styling.
 
 ## 🛠️ Technology Stack
 
@@ -36,30 +36,22 @@ Lendly is a sleek, hyper-local marketplace designed specifically for students an
 | :--- | :--- |
 | **Frontend Framework** | [Next.js 16 (App Router)](https://nextjs.org/) |
 | **Language** | [TypeScript](https://www.typescriptlang.org/) |
-| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) & Native CSS Variables |
-| **Authentication** | [Firebase Auth](https://firebase.google.com/) (Google OAuth & Email/Password) |
-| **Database** | [Firestore](https://firebase.google.com/docs/firestore) & [Realtime Database](https://firebase.google.com/docs/database) |
-| **Storage & CDN** | [Cloudinary](https://cloudinary.com/) |
-| **Maps & Routing** | [Leaflet](https://leafletjs.com/) & React-Leaflet |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS Variables |
+| **Database & Auth** | [Supabase](https://supabase.com/) (PostgreSQL + Supabase Auth) |
+| **Payments** | [Razorpay](https://razorpay.com/) |
+| **Storage & Uploads** | [Cloudinary](https://cloudinary.com/) |
+| **Maps** | [Leaflet](https://leafletjs.com/) & React-Leaflet |
 | **Icons** | [Lucide React](https://lucide.dev/) |
 
 ## 🚀 Getting Started
 
-Follow these instructions to set up the project locally on your machine.
-
-### Prerequisites
-
-Ensure you have the following installed and set up:
-- Node.js (v18 or later)
-- npm, yarn, or pnpm
-- A Firebase Project (with Firestore Database, Realtime Database, and Authentication enabled)
-- A Cloudinary Account
+Follow these steps to set up the project locally:
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/anandhukrishnaas1/RadiusCart.git
-cd RadiusCart/RadiusCart
+git clone https://github.com/karthik-git-pixel/LENDLY-WEBSITE.git
+cd LENDLY-WEBSITE
 ```
 
 ### 2. Install dependencies
@@ -70,72 +62,79 @@ npm install
 
 ### 3. Environment Setup
 
-Create a `.env.local` file in the root of the project (`RadiusCart/RadiusCart/.env.local`). Add your Firebase and Cloudinary credentials:
+Copy `.env.example` to `.env.local`:
 
-```env
-# Firebase Client SDK
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your_project_id-default-rtdb.firebaseio.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
-
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Optional Cloudflare Worker
-NEXT_PUBLIC_CLOUDFLARE_WORKER_URL=your_worker_url
+```bash
+cp .env.example .env.local
 ```
 
-> **⚠️ Important Firebase Setup Note:** 
-> When creating your Firebase project, ensure you have enabled **Google** and **Email/Password** in the Authentication Sign-In Methods. Additionally, ensure you create a **Firestore Database** and update the security rules to allow read/write access for authenticated users.
+Fill in your credentials in `.env.local`:
 
-### 4. Run the Development Server
+```env
+# Supabase Credentials (from Supabase Project Settings -> API)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Cloudinary
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Razorpay
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+```
+
+### 4. Database Setup
+
+Run the SQL migration in your Supabase SQL Editor:
+1. `supabase/schema.sql` (Database schema, tables, and RLS policies)
+2. `supabase/seed-demo.sql` (Optional: initial mock data and categories)
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser. The app will hot-reload as you make changes.
-
-> The repository and folder are still named `RadiusCart` from before the rebrand; the app itself ships as **Lendly**.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📂 Project Architecture
 
 ```text
-RadiusCart/
 ├── app/                  # Next.js App Router root
-│   ├── (main)/           # Authenticated application layout
+│   ├── (main)/           # Main application layouts and pages
 │   │   ├── chat/         # Real-time messaging
-│   │   ├── explore/      # Map and search discovery
+│   │   ├── explore/      # Map and discovery
 │   │   ├── home/         # Local feed and product listings
-│   │   ├── profile/      # User settings & wallet
-│   │   └── sell/         # Listing creation interface
-│   ├── api/              # Backend API routes (Cloudinary, webhooks)
-│   ├── login/            # Authentication & OAuth flows
-│   └── onboarding/       # Initial user profile setup
-├── components/           # Reusable modular UI components
-├── lib/                  # Core utilities & contexts
-│   ├── auth-context.tsx  # Global authentication state
-│   ├── firestore.ts      # Database schemas and queries
-│   └── cloudinary.ts     # Image processing logic
-└── public/               # Static assets, icons, and manifest
+│   │   ├── plan/         # Event planning assistant
+│   │   ├── print/        # Print and Xerox orders
+│   │   ├── profile/      # User profile, orders, KYC, and saved items
+│   │   ├── qr/           # QR code generation and verification
+│   │   ├── search/       # Search results page
+│   │   ├── sell/         # Product listing creation and management
+│   │   ├── seller/       # Seller public profile & dashboard
+│   │   └── shops/        # Local verified shops
+│   ├── admin/            # Admin KYC management
+│   ├── api/              # API routes (payment, KYC, upload)
+│   ├── auth/             # Supabase auth callbacks & password reset
+│   ├── login/            # Authentication login
+│   ├── onboarding/       # User profile setup
+│   └── register/         # User registration
+├── components/           # Reusable UI components
+│   ├── market/           # Market feeds, category rail, hero banner, shop cards
+│   ├── product/          # Product details, galleries, rent/sale actions
+│   └── ui/               # Reusable UI primitives (bottom sheets, modals)
+├── lib/                  # Core utilities, Supabase client, and contexts
+├── public/               # Static assets, demo data, and logos
+└── supabase/             # SQL migrations and demo seed files
 ```
-
-## 🤝 Contributing
-
-We welcome community contributions to Lendly! 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License.
+
