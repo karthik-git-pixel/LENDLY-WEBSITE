@@ -11,6 +11,10 @@
 --                                 OR buyer_id  IN (SELECT id FROM auth.users WHERE email LIKE '%@demo.lendly.app');
 --   DELETE FROM auth.users WHERE email LIKE '%@demo.lendly.app';
 -- ====================================================================
+-- Ensure storefront columns exist in case profiles table was created with an older schema
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS store_category TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS store_hours JSONB;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
 
 BEGIN;
 

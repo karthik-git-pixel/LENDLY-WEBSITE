@@ -55,6 +55,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   store_name TEXT DEFAULT '',
   store_description TEXT DEFAULT '',
   store_location JSONB DEFAULT '{"lat": 0, "lng": 0, "address": ""}'::jsonb,
+  store_category TEXT DEFAULT '',
+  store_hours JSONB,
+  is_admin BOOLEAN DEFAULT FALSE,
   saved_products TEXT[] DEFAULT '{}',
   rating NUMERIC(3, 2) DEFAULT 5.00,
   review_count INTEGER DEFAULT 0,
@@ -73,7 +76,6 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- Storefront details shown on "Shops near you"
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS store_category TEXT DEFAULT '';
--- {"open": "09:00", "close": "21:00", "closed_days": [0]}  (0 = Sunday)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS store_hours JSONB;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
 
