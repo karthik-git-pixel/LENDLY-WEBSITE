@@ -7,6 +7,8 @@ import { useAuth } from '@/lib/auth-context';
 import { getProduct, type Product } from '@/lib/supabase-db';
 import { kycSubmitted, shopReady } from '@/lib/kyc';
 import ListingForm from '@/components/listing/ListingForm';
+import SnapToList from '@/components/listing/SnapToList';
+import type { SnapResult } from '@/lib/ai/snap-types';
 
 // Lendly lists rentals only. This is the one place a visitor has to sign in:
 // browsing, searching and the map all work without an account. Lenders
@@ -25,6 +27,8 @@ function NewListing() {
   const { user, profile, loading } = useAuth();
   const [template, setTemplate] = useState<Product | null | undefined>(from ? undefined : null);
   const ready = Boolean(profile && kycSubmitted(profile) && shopReady(profile));
+  // New rentals start with Snap to List; copies go straight to the form
+  const [start, setStart] = useState<{ photo?: File; snap?: SnapResult } | null>(from ? {} : null);
 
   useEffect(() => {
     if (loading) return;
@@ -48,9 +52,11 @@ function NewListing() {
         <span style={{ width: 44 }} />
       </div>
       <div className="ln-shell lf-shell">
-        {ready && template !== undefined
-          ? <ListingForm kind="rent" template={template ?? undefined} />
-          : <div className="ln-skel" style={{ height: 240, borderRadius: 16, marginTop: 16 }} />}
+        {!ready || template === undefined
+          ? <div className="ln-skel" style={{ height: 240, borderRadius: 16, marginTop: 16 }} />
+          : start
+            ? <ListingForm kind="rent" template={template ?? undefined} photo={start.photo} snap={start.snap} />
+            : <SnapToList onResult={(photo, snap) => setStart({ photo, snap })} onManual={photo => setStart({ photo })} />}
       </div>
     </div>
   );

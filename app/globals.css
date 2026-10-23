@@ -6828,3 +6828,31 @@ select.ln-input { cursor: pointer; }
 /* Location notice: one compact line */
 .ln-locate-note { padding: 6px 10px; font-size: 12.5px; margin-top: 16px; }
 .ln-locate-note .ln-text-btn { min-height: 28px; }
+
+/* ===== Snap to List ===== */
+.snap-card { margin-top: 16px; padding: 22px 18px; border-radius: 20px; border: 1px solid var(--primary-200); background: linear-gradient(165deg, var(--primary-50) 0%, #ffffff 70%); text-align: center; }
+.snap-head h2 { margin-top: 10px; font-size: 22px; font-weight: 800; color: var(--ln-ink); }
+.snap-head p { margin-top: 6px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.snap-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--primary-100); color: var(--primary-dark); font: 700 11px var(--font-sans); }
+.snap-actions { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.snap-actions .ln-btn { width: 100%; cursor: pointer; }
+.snap-manual { margin-top: 14px; }
+.snap-scan { position: relative; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; background: var(--ln-soft); }
+.snap-scan img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.snap-scan::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%); background-size: 250% 100%; animation: snap-shimmer 1.6s linear infinite; }
+.snap-scan-beam { position: absolute; left: 0; right: 0; top: 0; height: 28%; background: linear-gradient(to bottom, transparent, rgba(34, 197, 94, 0.38), transparent); border-bottom: 2px solid rgba(22, 163, 74, 0.75); animation: snap-beam 1.8s var(--ease-soft, ease-in-out) infinite alternate; }
+.snap-status { margin-top: 14px; font: 700 15px var(--font-sans); color: var(--primary-dark); animation: snap-fade 0.35s ease-out; }
+@keyframes snap-shimmer { from { background-position: 150% 0; } to { background-position: -100% 0; } }
+@keyframes snap-beam { from { transform: translateY(-20%); } to { transform: translateY(290%); } }
+@keyframes snap-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .snap-scan::after, .snap-status { animation: none; }
+  .snap-scan-beam { animation: none; top: auto; bottom: 0; height: 100%; opacity: 0.35; border: 0; }
+}
+
+.lf-ai-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--primary-100); color: var(--primary-dark); font: 700 10px var(--font-sans); font-style: normal; vertical-align: 1px; }
+.lf-ai-note { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--primary-50); border: 1px solid var(--primary-200); color: var(--ln-ink); }
+.lf-ai-block { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.lf-ai-prices { margin: 12px 0 4px; padding: 12px; border-radius: 14px; background: var(--primary-50); display: grid; gap: 8px; justify-items: start; }
+.lf-ai-prices-label { font: 700 12px var(--font-sans); color: var(--primary-dark); }
+.lf-ai-value { cursor: default; background: #ffffff; }

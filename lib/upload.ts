@@ -19,7 +19,7 @@ const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024;
  */
 export async function compressImage(
   file: File,
-  options?: { maxWidth?: number; maxHeight?: number; quality?: number }
+  options?: { maxWidth?: number; maxHeight?: number; quality?: number; type?: 'image/webp' | 'image/jpeg' }
 ): Promise<File> {
   // If not an image, or is SVG/GIF, return as is
   if (typeof window === 'undefined' || !file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.type === 'image/gif') {
@@ -74,7 +74,7 @@ export async function compressImage(
             const fileName = file.name.replace(/\.[^/.]+$/, '') + extension;
             resolve(new File([blob], fileName, { type: blob.type || 'image/jpeg', lastModified: Date.now() }));
           },
-          'image/webp',
+          options?.type || 'image/webp',
           quality
         );
       };
