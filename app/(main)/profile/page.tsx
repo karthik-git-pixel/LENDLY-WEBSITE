@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { updateUserProfile } from '@/lib/firestore';

@@ -10,7 +10,6 @@ import {
   Lightbulb,
   Monitor,
   Package,
-  Printer,
   Projector,
   Shirt,
   Sparkles,
@@ -134,7 +133,7 @@ export const CATEGORIES: Category[] = [
   },
 ];
 
-/** The category rail: "All", the catalogue, and Print & Xerox as a shortcut */
+/** The category rail: "All", then the catalogue */
 export interface RailItem {
   id: string;
   label: string;
@@ -143,7 +142,6 @@ export interface RailItem {
 }
 
 export const ALL_RAIL_ITEM: RailItem = { id: 'all', label: 'All', icon: LayoutGrid };
-export const PRINT_RAIL_ITEM: RailItem = { id: 'print', label: 'Print & Xerox', icon: Printer, href: '/print' };
 
 export function railItems(view: 'all' | ListingType): RailItem[] {
   const ordered = view === 'rent'
@@ -152,7 +150,6 @@ export function railItems(view: 'all' | ListingType): RailItem[] {
   return [
     ALL_RAIL_ITEM,
     ...ordered.filter(c => c.id !== 'other').map(c => ({ id: c.id, label: c.name, icon: c.icon })),
-    PRINT_RAIL_ITEM,
   ];
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { Camera, Loader2, RefreshCw, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { toDocValue, useDocPreview, type DocValue } from './DocumentUpload';

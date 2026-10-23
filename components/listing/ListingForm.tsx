@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ImagePlus, Loader2, Star, X } from 'lucide-react';
@@ -14,7 +14,7 @@ import {
   CATEGORIES, RENT_UNITS, SALE_CONDITIONS, SUBCATEGORY_SPEC, fitsShopLabel, rentFeatureOptions, shopMainCategory,
   type ListingType, type RentUnit,
 } from '@/lib/catalog';
-import LocationPicker from './LocationPicker';
+import LocationPicker, { hasAddressDetails } from './LocationPicker';
 
 const MAX_PHOTOS = 8;
 
@@ -104,6 +104,7 @@ export default function ListingForm({ kind, initial, template }: ListingFormProp
     if (!(Number(price) > 0)) return toast.error(rent ? 'Set your rental price' : 'Set your price');
     if (photos.length === 0) return toast.error('Add at least one photo');
     if (!hasPoint(where)) return toast.error('Set the pickup location');
+    if (!hasAddressDetails(where)) return toast.error('Enter the full pickup address');
 
     const pending = photos.filter(p => p.file).length;
     let uploaded = 0;
@@ -126,7 +127,7 @@ export default function ListingForm({ kind, initial, template }: ListingFormProp
         category,
         subcategory,
         images,
-        location: { lat: where.lat, lng: where.lng, address: where.address || 'Nearby' },
+        location: { lat: where.lat, lng: where.lng, address: where.address || 'Nearby', details: where.details!.trim() },
         listingType: kind,
         status: active ? 'available' : 'paused',
         ...(rent

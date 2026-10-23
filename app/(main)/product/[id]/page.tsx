@@ -236,6 +236,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 height={220}
                 className="pd-map"
               />
+              {product.location.details && <p className="pd-map-caption"><strong>{product.location.details}</strong></p>}
               <p className="pd-map-caption">
                 <MapPin size={14} aria-hidden="true" /> {product.location.address || 'Neighbourhood'}
                 {distance !== null ? ` · ${formatDistance(distance)} from you` : ''}

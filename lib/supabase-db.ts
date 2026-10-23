@@ -8,6 +8,8 @@ export interface GeoPoint {
   lat: number;
   lng: number;
   address: string;
+  /** House / building, street and landmark, typed in by the owner */
+  details?: string;
 }
 
 /** Shop opening hours, 24h "HH:MM"; closed_days uses 0 = Sunday */
@@ -201,11 +203,12 @@ const EMPTY_POINT: GeoPoint = { lat: 0, lng: 0, address: '' };
 
 function toPoint(value: unknown): GeoPoint {
   if (!value || typeof value !== 'object') return { ...EMPTY_POINT };
-  const v = value as { lat?: unknown; lng?: unknown; address?: unknown };
+  const v = value as { lat?: unknown; lng?: unknown; address?: unknown; details?: unknown };
   return {
     lat: Number(v.lat) || 0,
     lng: Number(v.lng) || 0,
     address: typeof v.address === 'string' ? v.address : '',
+    ...(typeof v.details === 'string' && v.details.trim() ? { details: v.details } : {}),
   };
 }
 

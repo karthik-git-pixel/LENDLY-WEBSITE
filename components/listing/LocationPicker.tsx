@@ -20,8 +20,11 @@ interface LocationPickerProps {
   height?: number;
 }
 
-/** Drag-the-pin map with "use my location" and an area search */
-export default function LocationPicker({ value, fallback, onChange, extra, height = 200 }: LocationPickerProps) {
+/** The typed address is required wherever a pickup point is saved */
+export const hasAddressDetails = (p?: GeoPoint | null) => Boolean(p?.details?.trim());
+
+/** Drag-the-pin map with "use my location", an area search and a typed full address */
+export default function LocationPicker({ value, fallback, onChange: setPoint, extra, height = 200 }: LocationPickerProps) {
   const { locate } = useUserLocation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeoPoint[]>([]);
@@ -29,6 +32,8 @@ export default function LocationPicker({ value, fallback, onChange, extra, heigh
   // Only the latest pin move may write its looked-up address
   const lookup = useRef(0);
   const where = value || fallback;
+  // Moving the pin changes the map point, not the address the owner typed
+  const onChange = (p: GeoPoint) => setPoint({ ...p, details: p.details ?? where.details });
 
   const useMyLocation = async () => {
     setLocating(true);
@@ -99,6 +104,18 @@ export default function LocationPicker({ value, fallback, onChange, extra, heigh
           ))}
         </ul>
       )}
+      <label className="pd-field" style={{ marginTop: 14 }}>
+        <span>Full address</span>
+        <textarea
+          className="ln-input"
+          rows={2}
+          maxLength={200}
+          required
+          value={where.details || ''}
+          onChange={e => setPoint({ ...where, details: e.target.value })}
+          placeholder="House / shop no., building, street, landmark"
+        />
+      </label>
     </>
   );
 }

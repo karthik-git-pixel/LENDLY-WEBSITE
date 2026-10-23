@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   ChevronDown, Heart, LogOut, Map as MapIcon, MapPin, MessageCircle, Package, Plus,

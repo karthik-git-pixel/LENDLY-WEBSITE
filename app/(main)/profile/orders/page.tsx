@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CalendarDays, Check, MessageCircle, QrCode, ScanLine, Star, X } from 'lucide-react';

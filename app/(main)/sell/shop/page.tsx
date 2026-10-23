@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Camera, Eye, ImagePlus, Loader2, Trash2 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { uploadImage } from '@/lib/upload';
 import { CATEGORIES, shopMainCategory } from '@/lib/catalog';
 import { getOpenState } from '@/lib/store-hours';
 import { kycSubmitted } from '@/lib/kyc';
-import LocationPicker from '@/components/listing/LocationPicker';
+import LocationPicker, { hasAddressDetails } from '@/components/listing/LocationPicker';
 import { avatarFor } from '@/components/AppHeader';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -118,6 +118,7 @@ function ShopForm({ profile, onboarding }: { profile: UserProfile; onboarding: b
     if (name.trim().length < 2) return toast.error('Give your shop a name');
     if (!category) return toast.error('Choose what you rent out');
     if (!place || !hasPoint(place)) return toast.error('Set your shop’s pickup location');
+    if (!hasAddressDetails(place)) return toast.error('Enter your shop’s full address');
     if (hours && (!opens || !closes || opens === closes)) return toast.error('Set different opening and closing times');
     if (hours && closedDays.length >= 7) return toast.error('Pick at least one day you’re open');
 
@@ -128,7 +129,7 @@ function ShopForm({ profile, onboarding }: { profile: UserProfile; onboarding: b
         storeName: name.trim(),
         storeCategory: label,
         storeDescription: description.trim(),
-        storeLocation: place,
+        storeLocation: { ...place, details: place.details!.trim() },
         storeHours: hours,
         coverUrl,
         avatarUrl: logoUrl,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Loader2, Sparkles } from 'lucide-react';

@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useState, useEffect } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useRequireAuth } from '@/lib/useRequireAuth';

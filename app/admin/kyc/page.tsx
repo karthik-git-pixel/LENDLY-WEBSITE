@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Clock, FileText, Shield, X } from 'lucide-react';
 import toast from 'react-hot-toast';

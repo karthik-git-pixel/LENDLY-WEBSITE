@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Star, ShieldCheck, Quote, CheckCircle2, ThumbsUp, Lock, MessageSquarePlus, Check, X, Repeat2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import RadiusEngraving from './RadiusEngraving';
 
 const REVIEWS_KEY = 'lendly_user_reviews';

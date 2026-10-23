@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, BadgeCheck, Clock, Heart, MapPin, MessageCircle, Package, Share2, ShieldCheck, Star } from 'lucide-react';

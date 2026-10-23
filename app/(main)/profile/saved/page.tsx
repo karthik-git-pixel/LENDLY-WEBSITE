@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { getProduct, toggleSavedProduct, type Product } from '@/lib/firestore';

@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { getChatRoom, listenToMessages, sendMessage, type ChatMessage } from '@/lib/chat';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Send, MessageSquare, Lock, ShieldCheck } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import toast from 'react-hot-toast';
 
 const BUYER_PRESET_MESSAGES = [

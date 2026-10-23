@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { ArrowLeft, CalendarDays, CheckCircle2, Copy, MessageCircle } from 'lucide-react';

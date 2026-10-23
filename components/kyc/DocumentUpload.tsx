@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/AppImage';
 import { FileText, ImagePlus, Loader2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getKycDocumentUrl } from '@/lib/upload';
