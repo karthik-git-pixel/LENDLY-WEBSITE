@@ -221,8 +221,38 @@ function dbErrorMessage(error: { message?: string; code?: string } | null | unde
   return error.message || fallback;
 }
 
+// ==================== DEMO FALLBACK ====================
+// Until supabase/seed-demo.sql has been run, browsing shows the same demo
+// shops and listings from /demo/market.json (same ids as the seed).
+interface DemoData { products: ProductRow[]; sellers: ProfileRow[] }
+let demoData: Promise<DemoData> | null = null;
+
+function loadDemo(): Promise<DemoData> {
+  if (typeof window === 'undefined') return Promise.resolve({ products: [], sellers: [] });
+  demoData ??= fetch('/demo/market.json')
+    .then(r => (r.ok ? r.json() : { products: [], sellers: [] }))
+    .catch(() => ({ products: [], sellers: [] }));
+  return demoData;
+}
+
+/** Demo listings use ids that start with e0000000- (see seed-demo.sql) */
+export function isDemoId(id: string): boolean {
+  return id.startsWith('e0000000-') || id.startsWith('d0000000-');
+}
+
+/** Resolves to null if a query hangs, so pages never spin forever */
+function withTimeout<T>(promise: PromiseLike<T>, ms = 8000): Promise<T | null> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<null>(resolve => setTimeout(() => resolve(null), ms)),
+  ]);
+}
+
 async function rpc<T>(fn: string, args: Record<string, unknown>, fallback: string): Promise<T> {
   const { data, error } = await supabase.rpc(fn, args);
+  if (error && typeof args.p_product_id === 'string' && isDemoId(args.p_product_id) && /not found|PGRST202/i.test(`${error.message} ${error.code}`)) {
+    throw new Error('This is a demo listing — run supabase/seed-demo.sql in Supabase to make it bookable.');
+  }
   if (error) throw new Error(dbErrorMessage(error, fallback));
   return data as T;
 }
@@ -618,8 +648,10 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const cached = getCached<UserProfile>(`user_${uid}`, 60000);
   if (cached) return cached;
 
-  const { data, error } = await supabase.from('profiles').select(PUBLIC_PROFILE_COLUMNS).eq('id', uid).maybeSingle<ProfileRow>();
-  if (error || !data) return null;
+  const res = await withTimeout(supabase.from('profiles').select(PUBLIC_PROFILE_COLUMNS).eq('id', uid).maybeSingle<ProfileRow>());
+  let data = res && !res.error ? res.data : null;
+  if (!data && isDemoId(uid)) data = (await loadDemo()).sellers.find(s => s.id === uid) ?? null;
+  if (!data) return null;
 
   const profile = mapProfile(data);
   setCached(`user_${uid}`, profile);
@@ -646,9 +678,12 @@ export async function toggleSavedProduct(uid: string, productId: string, current
 export async function getAllSellers(): Promise<UserProfile[]> {
   const cached = getCached<UserProfile[]>('all_sellers', 30000);
   if (cached) return cached;
-  const { data, error } = await supabase.from('profiles').select(PUBLIC_PROFILE_COLUMNS).eq('is_seller', true).returns<ProfileRow[]>();
-  if (error || !data) return [];
-  const sellers = data.map(mapProfile);
+  const res = await withTimeout(supabase.from('profiles').select(PUBLIC_PROFILE_COLUMNS).eq('is_seller', true).returns<ProfileRow[]>());
+  const rows = res && !res.error && res.data ? res.data : [];
+  // Demo shops fill in until real shops have listings
+  const demo = (await getAllAvailableProducts()).some(p => isDemoId(p.id)) ? (await loadDemo()).sellers : [];
+  const seen = new Set(rows.map(r => r.id));
+  const sellers = [...rows, ...demo.filter(d => !seen.has(d.id))].map(mapProfile);
   setCached('all_sellers', sellers);
   return sellers;
 }
@@ -711,8 +746,10 @@ export async function getProduct(id: string): Promise<Product | null> {
   const cached = getCachedProduct(id);
   if (cached) return cached;
 
-  const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
-  if (error || !data) return null;
+  const res = await withTimeout(supabase.from('products').select('*').eq('id', id).maybeSingle<ProductRow>());
+  let data = res && !res.error ? res.data : null;
+  if (!data && isDemoId(id)) data = (await loadDemo()).products.find(p => p.id === id) ?? null;
+  if (!data) return null;
 
   const product = mapProduct(data);
   setCached(`product_${id}`, product);
@@ -721,9 +758,10 @@ export async function getProduct(id: string): Promise<Product | null> {
 
 export async function getProductsByIds(ids: string[]): Promise<Product[]> {
   if (ids.length === 0) return [];
-  const { data, error } = await supabase.from('products').select('*').in('id', ids);
-  if (error || !data) return [];
-  const byId = new Map(data.map(row => [row.id, mapProduct(row)]));
+  const res = await withTimeout(supabase.from('products').select('*').in('id', ids).returns<ProductRow[]>());
+  const rows = res && !res.error && res.data ? [...res.data] : [];
+  if (ids.some(isDemoId)) rows.push(...(await loadDemo()).products.filter(p => ids.includes(p.id)));
+  const byId = new Map(rows.map(row => [row.id, mapProduct(row)]));
   return ids.map(id => byId.get(id)).filter((p): p is Product => Boolean(p));
 }
 
@@ -747,6 +785,9 @@ export async function getProductsBySeller(sellerId: string): Promise<Product[]> 
     .select('*')
     .eq('seller_id', sellerId)
     .order('created_at', { ascending: false });
+  if ((error || !data?.length) && isDemoId(sellerId)) {
+    return (await loadDemo()).products.filter(p => p.seller_id === sellerId).map(mapProduct);
+  }
   if (error || !data) return [];
   return data.map(mapProduct);
 }
@@ -755,15 +796,17 @@ export async function getAllAvailableProducts(): Promise<Product[]> {
   const cached = getCached<Product[]>('all_available_products', 15000);
   if (cached) return cached;
 
-  const { data, error } = await supabase
+  const res = await withTimeout(supabase
     .from('products')
     .select('*')
     .eq('status', 'available')
     .order('created_at', { ascending: false })
-    .limit(1000);
+    .limit(1000)
+    .returns<ProductRow[]>());
 
-  if (error || !data) return [];
-  const products = data.map(mapProduct);
+  let rows = res && !res.error && res.data ? res.data : [];
+  if (rows.length === 0) rows = (await loadDemo()).products;
+  const products = rows.map(mapProduct);
   setCached('all_available_products', products);
   return products;
 }

@@ -19,6 +19,7 @@ import Section from '@/components/market/Section';
 import ShopCard, { ShopCardSkeleton } from '@/components/market/ShopCard';
 import ItemGrid, { ItemGridSkeleton, ItemRow } from '@/components/market/ItemGrid';
 import EventBanner from '@/components/market/EventBanner';
+import HeroBanner from '@/components/market/HeroBanner';
 import EventEssentials from '@/components/market/EventEssentials';
 import NearbyEmpty from '@/components/market/NearbyEmpty';
 import SiteFooter from '@/components/market/SiteFooter';
@@ -66,7 +67,8 @@ function HomeContent() {
       return market.nearbyItems.some(i => i.sellerId === s.uid && matchesCategory(i, filters.category));
     }
     return true;
-  }), [market.nearbyShops, market.nearbyItems, filters]);
+  }).sort((a, b) => (b.reviewCount ? Number(b.rating) : 0) - (a.reviewCount ? Number(a.rating) : 0) || a.distance - b.distance),
+  [market.nearbyShops, market.nearbyItems, filters]);
 
   const fresh = useMemo(() => {
     const cutoff = market.loadedAt - FRESH_DAYS * 24 * 60 * 60 * 1000;
@@ -96,14 +98,7 @@ function HomeContent() {
           active={filters.category}
           onSelect={category => setFilters({ category, sub: null })}
         />
-        <FilterBar
-          filters={filters}
-          onChange={setFilters}
-          onReset={reset}
-          radiusKm={radiusKm}
-          onRadiusChange={setRadiusKm}
-          resultCount={results.length}
-        />
+        {filters.type === 'all' && filters.category === 'all' && <HeroBanner />}
 
         {filters.sub && (
           <div className="ln-active-sub">
@@ -113,20 +108,9 @@ function HomeContent() {
           </div>
         )}
 
-        {errorMessage && source !== 'device' && (
-          <p className="ln-note ln-note-warn ln-locate-note" role="status">
-            <span>{errorMessage}</span>
-            {status !== 'insecure' && status !== 'unsupported' && (
-              <button type="button" className="ln-text-btn" onClick={() => void locate()}>
-                <Crosshair size={14} aria-hidden="true" /> Try again
-              </button>
-            )}
-          </p>
-        )}
-
         {loading ? (
           <>
-            <Section title="Shops near you">
+            <Section title="Top-rated shops near you">
               <div className="ln-hscroll">
                 {Array.from({ length: 4 }, (_, i) => <ShopCardSkeleton key={i} />)}
               </div>
@@ -140,11 +124,22 @@ function HomeContent() {
         ) : (
           <>
             {shops.length > 0 && (
-              <Section title={filters.type === 'rent' ? 'Rental shops near you' : 'Shops near you'} seeAllHref="/shops">
+              <Section title="Top-rated shops near you" seeAllHref="/search?tab=shops">
                 <div className="ln-hscroll">
                   {shops.slice(0, 12).map((shop, i) => <ShopCard key={shop.uid} shop={shop} priority={i < 2} />)}
                 </div>
               </Section>
+            )}
+
+            {errorMessage && source !== 'device' && (
+              <p className="ln-note ln-note-warn ln-locate-note" role="status">
+                <span>{status === 'denied' ? 'Location is off — showing listings near Kochi.' : errorMessage}</span>
+                {status !== 'insecure' && status !== 'unsupported' && (
+                  <button type="button" className="ln-text-btn" onClick={() => void locate()}>
+                    <Crosshair size={14} aria-hidden="true" /> Use my location
+                  </button>
+                )}
+              </p>
             )}
 
             {showEssentials && (
@@ -156,6 +151,15 @@ function HomeContent() {
             )}
 
             <Section title={gridTitle(filters)}>
+              <FilterBar
+                filters={filters}
+                onChange={setFilters}
+                onReset={reset}
+                radiusKm={radiusKm}
+                onRadiusChange={setRadiusKm}
+                resultCount={results.length}
+              />
+              <div style={{ height: 14 }} />
               {filteredOut ? (
                 <NearbyEmpty
                   radiusKm={radiusKm}

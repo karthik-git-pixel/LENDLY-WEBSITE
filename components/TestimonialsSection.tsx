@@ -95,8 +95,8 @@ const TRUST_POINTS = [
     icon: Lock,
     title: '100% Verified P2P Deals',
     body: 'Direct peer-to-peer payments & handovers',
-    bg: 'rgba(249, 115, 22, 0.12)',
-    fg: '#f97316',
+    bg: 'rgba(22, 163, 74, 0.12)',
+    fg: '#16a34a',
   },
   {
     icon: CheckCircle2,
@@ -222,9 +222,9 @@ export default function TestimonialsSection() {
               {/* Trust Highlights & Add Review Button */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <div className="rc-rating-card">
-                  <div style={{ display: 'flex', color: '#f97316' }}>
+                  <div style={{ display: 'flex', color: '#16a34a' }}>
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill="#fca311" color="#fca311" />
+                      <Star key={i} size={14} fill="#16a34a" color="#16a34a" />
                     ))}
                   </div>
                   <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--foreground)' }}>
@@ -245,7 +245,7 @@ export default function TestimonialsSection() {
                     alignItems: 'center',
                     gap: 6,
                     cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(249, 115, 22, 0.25)',
+                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)',
                   }}
                 >
                   {showForm ? <X size={16} /> : <MessageSquarePlus size={16} />}
@@ -258,7 +258,7 @@ export default function TestimonialsSection() {
 
         {/* Add Review Inline Form */}
         {showForm && (
-          <form onSubmit={handleSubmitReview} className="fade-in" style={{ marginTop: 20, paddingTop: 20, borderTop: '1px dashed rgba(249, 115, 22, 0.3)' }}>
+          <form onSubmit={handleSubmitReview} className="fade-in" style={{ marginTop: 20, paddingTop: 20, borderTop: '1px dashed rgba(22, 163, 74, 0.3)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--foreground)', marginBottom: 12 }}>
               Add Your Review & Rating
             </h3>
@@ -274,14 +274,14 @@ export default function TestimonialsSection() {
                     key={starVal}
                     size={24}
                     style={{ cursor: 'pointer', transition: 'transform 0.15s ease' }}
-                    fill={(hoverRating || rating) >= starVal ? '#f97316' : 'none'}
-                    color={(hoverRating || rating) >= starVal ? '#f97316' : '#cbd5e1'}
+                    fill={(hoverRating || rating) >= starVal ? '#16a34a' : 'none'}
+                    color={(hoverRating || rating) >= starVal ? '#16a34a' : '#cbd5e1'}
                     onMouseEnter={() => setHoverRating(starVal)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => setRating(starVal)}
                   />
                 ))}
-                <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 700, color: '#f97316' }}>
+                <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 700, color: '#16a34a' }}>
                   {rating}.0 Stars
                 </span>
               </div>
@@ -367,7 +367,7 @@ export default function TestimonialsSection() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
                   <div style={{ display: 'flex', gap: 2 }} aria-label={`${t.rating} out of 5 stars`}>
                     {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} size={13} fill="#fca311" color="#fca311" />
+                      <Star key={i} size={13} fill="#16a34a" color="#16a34a" />
                     ))}
                   </div>
                   <span className="rc-testimonial-badge">
@@ -388,7 +388,7 @@ export default function TestimonialsSection() {
                   <Quote
                     size={14}
                     strokeWidth={2.4}
-                    style={{ color: '#f97316', marginRight: 5, verticalAlign: '-2px' }}
+                    style={{ color: '#16a34a', marginRight: 5, verticalAlign: '-2px' }}
                   />
                   {t.text}
                 </p>

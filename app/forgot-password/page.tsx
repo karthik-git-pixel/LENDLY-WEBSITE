@@ -153,7 +153,7 @@ export default function ForgotPasswordPage() {
                 style={{
                   width: '100%', padding: '14px 18px', fontSize: 15, fontWeight: 700, borderRadius: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  boxShadow: '0 4px 14px rgba(249, 115, 22, 0.3)'
+                  boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
                 }}
                 disabled={loading}
               >
@@ -166,7 +166,7 @@ export default function ForgotPasswordPage() {
 
               <div style={{ textAlign: 'center', marginTop: 24 }}>
                 <span style={{ fontSize: 13.5, color: '#64748b' }}>Remember your password? </span>
-                <Link href="/login" style={{ color: '#f97316', fontWeight: 700, textDecoration: 'none', fontSize: 13.5 }}>
+                <Link href="/login" style={{ color: '#16a34a', fontWeight: 700, textDecoration: 'none', fontSize: 13.5 }}>
                   Sign In
                 </Link>
               </div>

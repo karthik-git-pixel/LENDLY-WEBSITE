@@ -71,11 +71,11 @@ export default function AppHeader({ hideOnMobile = false }: { hideOnMobile?: boo
           </button>
 
           <div className="ln-header-actions">
-            <Link href="/explore" className="ln-icon-btn desktop-only" aria-label="Map view" title="Map view">
+            <Link href="/search?tab=shops" className="ln-icon-btn desktop-only" aria-label="Map view" title="Map view">
               <MapIcon size={20} />
             </Link>
             {isAuthenticated && (
-              <Link href="/chat" className="ln-icon-btn desktop-only" aria-label="Chats" title="Chats">
+              <Link href="/chat" className="ln-icon-btn" aria-label="Chats" title="Chats">
                 <MessageCircle size={20} />
               </Link>
             )}

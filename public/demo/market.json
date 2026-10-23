@@ -1,0 +1,1628 @@
+{
+ "products": [
+  {
+   "id": "e0000000-0000-4000-8000-000000000025",
+   "seller_id": "d0000000-0000-4000-8000-000000000005",
+   "title": "iPhone 12 (128 GB)",
+   "description": "Battery health 86%, always used with a case. Box and bill available.",
+   "price": "32000.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "Like new",
+   "images": [
+    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0445,
+    "lng": 76.326,
+    "address": "CUSAT, Kalamassery"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 176,
+   "created_at": "2026-10-22T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Mobiles & Tablets",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000015",
+   "seller_id": "d0000000-0000-4000-8000-000000000003",
+   "title": "PS5 with 2 controllers",
+   "description": "PlayStation 5 disc edition with FIFA and two DualSense controllers.",
+   "price": "700.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0162,
+    "lng": 76.3424,
+    "address": "Kakkanad, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 188,
+   "created_at": "2026-10-22T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Gaming",
+   "reference_url": "",
+   "security_deposit": "5000.00",
+   "min_units": 1,
+   "max_units": 7,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000022",
+   "seller_id": "d0000000-0000-4000-8000-000000000005",
+   "title": "B.Tech CSE semester 5 textbook set",
+   "description": "All six KTU semester-5 textbooks, lightly highlighted.",
+   "price": "1200.00",
+   "original_price": null,
+   "category": "Books",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0448,
+    "lng": 76.3258,
+    "address": "CUSAT, Kalamassery"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 117,
+   "created_at": "2026-10-21T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Textbooks",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000004",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "Stage light package — 12 LED pars + 2 moving heads",
+   "description": "DMX-controlled LED pars, two moving heads and a haze machine. Technician sets up and runs the show.",
+   "price": "3500.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0529,
+    "lng": 76.3179,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 121,
+   "created_at": "2026-10-21T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Lighting",
+   "reference_url": "",
+   "security_deposit": "4000.00",
+   "min_units": 1,
+   "max_units": 5,
+   "capacity": null,
+   "features": [
+    "LED par lights",
+    "Moving heads",
+    "DMX control",
+    "Setup included"
+   ],
+   "attributes": {
+    "fixtures": "14 lights"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000026",
+   "seller_id": "d0000000-0000-4000-8000-000000000006",
+   "title": "Banquet chairs with covers — set of 100",
+   "description": "Cushioned banquet chairs with white covers and sashes, delivered and arranged.",
+   "price": "2000.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1530023367847-a683933f4172?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9675,
+    "lng": 76.3203,
+    "address": "Vyttila, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 109,
+   "created_at": "2026-10-20T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Chairs & Tables",
+   "reference_url": "",
+   "security_deposit": "2000.00",
+   "min_units": 1,
+   "max_units": 5,
+   "capacity": null,
+   "features": [
+    "Chair covers",
+    "Delivery available"
+   ],
+   "attributes": {
+    "quantity": "100 chairs"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000001",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "JBL PA speaker set (2 × 15\") with mixer",
+   "description": "Two 15-inch JBL tops, a 4-channel mixer, stands and cabling. Comfortably covers 200–300 people indoors.",
+   "price": "2500.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0535,
+    "lng": 76.3182,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 142,
+   "created_at": "2026-10-20T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Sound & DJ",
+   "reference_url": "",
+   "security_deposit": "3000.00",
+   "min_units": 1,
+   "max_units": 7,
+   "capacity": null,
+   "features": [
+    "Delivery available",
+    "Setup included",
+    "Mixer included"
+   ],
+   "attributes": {
+    "power": "2000 W"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000040",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "Furnished room near Kaloor metro",
+   "description": "Single room in a shared flat: bed, wardrobe, Wi-Fi and housekeeping. Walk to the metro.",
+   "price": "8500.00",
+   "original_price": null,
+   "category": "Properties",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9978,
+    "lng": 76.2998,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "month",
+   "views": 140,
+   "created_at": "2026-10-19T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Rooms & PG",
+   "reference_url": "",
+   "security_deposit": "15000.00",
+   "min_units": 3,
+   "max_units": 12,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000024",
+   "seller_id": "d0000000-0000-4000-8000-000000000005",
+   "title": "Dell Inspiron 15 (i5, 8 GB, SSD)",
+   "description": "Student laptop, new battery, Windows 11.",
+   "price": "26000.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.045,
+    "lng": 76.3253,
+    "address": "CUSAT, Kalamassery"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 132,
+   "created_at": "2026-10-19T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Laptops & Computers",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000011",
+   "seller_id": "d0000000-0000-4000-8000-000000000003",
+   "title": "Canon EOS 200D with 18-55mm lens",
+   "description": "24 MP DSLR, two batteries, 64 GB card and a padded bag. Perfect for trips and family functions.",
+   "price": "800.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0161,
+    "lng": 76.3422,
+    "address": "Kakkanad, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 167,
+   "created_at": "2026-10-19T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Cameras & Lenses",
+   "reference_url": "",
+   "security_deposit": "5000.00",
+   "min_units": 1,
+   "max_units": 14,
+   "capacity": null,
+   "features": [
+    "Extra battery",
+    "Memory card"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000031",
+   "seller_id": "d0000000-0000-4000-8000-000000000007",
+   "title": "Kanjivaram silk saree",
+   "description": "Rich maroon-and-gold silk saree with stitched blouse (free alteration).",
+   "price": "1500.00",
+   "original_price": null,
+   "category": "Fashion",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9677,
+    "lng": 76.2852,
+    "address": "MG Road, Ernakulam"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 99,
+   "created_at": "2026-10-18T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Ethnic & Occasion",
+   "reference_url": "",
+   "security_deposit": "3000.00",
+   "min_units": 1,
+   "max_units": 3,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000019",
+   "seller_id": "d0000000-0000-4000-8000-000000000004",
+   "title": "Royal Enfield Classic 350",
+   "description": "Well-maintained 2022 Classic with two helmets. Licence check at pickup.",
+   "price": "1200.00",
+   "original_price": null,
+   "category": "Vehicles",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0025,
+    "lng": 76.303,
+    "address": "Palarivattom, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 156,
+   "created_at": "2026-10-18T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Bikes & Scooters",
+   "reference_url": "",
+   "security_deposit": "5000.00",
+   "min_units": 1,
+   "max_units": 10,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {
+    "engine": "350 cc"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000005",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "Balloon & confetti party decor",
+   "description": "Balloon arch, confetti cannons and a name banner. Set up 2 hours before your party.",
+   "price": "1800.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0537,
+    "lng": 76.3186,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 57,
+   "created_at": "2026-10-18T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Stage & Decor",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": 1,
+   "capacity": null,
+   "features": [
+    "Setup included",
+    "Backdrop"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000029",
+   "seller_id": "d0000000-0000-4000-8000-000000000006",
+   "title": "Ford Mustang wedding car",
+   "description": "Decorated Mustang with chauffeur for the bride and groom. Up to 4 hours within Kochi.",
+   "price": "12000.00",
+   "original_price": null,
+   "category": "Vehicles",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9668,
+    "lng": 76.3204,
+    "address": "Vyttila, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 190,
+   "created_at": "2026-10-17T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Cars",
+   "reference_url": "",
+   "security_deposit": "5000.00",
+   "min_units": 1,
+   "max_units": 1,
+   "capacity": null,
+   "features": [
+    "Operator included",
+    "Flower decor"
+   ],
+   "attributes": {
+    "seats": "4 seater"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000008",
+   "seller_id": "d0000000-0000-4000-8000-000000000002",
+   "title": "Grand banquet hall — up to 500 guests",
+   "description": "Fully air-conditioned hall with stage, green room, in-house kitchen, dining for 250 and parking for 120 cars.",
+   "price": "45000.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0264,
+    "lng": 76.3088,
+    "address": "Edappally, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 210,
+   "created_at": "2026-10-17T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Halls & Venues",
+   "reference_url": "",
+   "security_deposit": "10000.00",
+   "min_units": 1,
+   "max_units": 3,
+   "capacity": 500,
+   "features": [
+    "AC",
+    "Parking",
+    "Stage",
+    "Kitchen",
+    "Dining area",
+    "Power backup"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000016",
+   "seller_id": "d0000000-0000-4000-8000-000000000003",
+   "title": "MacBook Air M1 (8 GB / 256 GB)",
+   "description": "Battery health 89%, original charger, no dents.",
+   "price": "48000.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0153,
+    "lng": 76.3416,
+    "address": "Kakkanad, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 143,
+   "created_at": "2026-10-17T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Laptops & Computers",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000013",
+   "seller_id": "d0000000-0000-4000-8000-000000000003",
+   "title": "DJI drone with licensed pilot",
+   "description": "Aerial photos and 4K video for weddings and events, edited highlights within 48 hours.",
+   "price": "3000.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0164,
+    "lng": 76.3417,
+    "address": "Kakkanad, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 92,
+   "created_at": "2026-10-16T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Photo & Video",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": 2,
+   "capacity": null,
+   "features": [
+    "Operator included"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000034",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "3-seater fabric sofa",
+   "description": "Bottle-green velvet sofa, 18 months old, from a smoke-free home.",
+   "price": "14500.00",
+   "original_price": null,
+   "category": "Furniture",
+   "condition": "Like new",
+   "images": [
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9974,
+    "lng": 76.2997,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 128,
+   "created_at": "2026-10-16T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Sofas & Chairs",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000038",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "Samsung 43\" 4K smart TV",
+   "description": "Two years old with wall mount and remote.",
+   "price": "18000.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9972,
+    "lng": 76.3001,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 95,
+   "created_at": "2026-10-15T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "TV & Audio",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000027",
+   "seller_id": "d0000000-0000-4000-8000-000000000006",
+   "title": "Wedding table setup — 10 round tables",
+   "description": "Ten 6-ft round tables with linen, runners and centrepieces for 80–100 guests.",
+   "price": "3500.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.967,
+    "lng": 76.3208,
+    "address": "Vyttila, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 84,
+   "created_at": "2026-10-15T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Chairs & Tables",
+   "reference_url": "",
+   "security_deposit": "3000.00",
+   "min_units": 1,
+   "max_units": 3,
+   "capacity": null,
+   "features": [
+    "Round tables",
+    "Setup included"
+   ],
+   "attributes": {
+    "quantity": "10 tables"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000002",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "Pioneer DJ console with DJ",
+   "description": "Pioneer DDJ controller with an experienced DJ for up to 6 hours. Playlist planning call included.",
+   "price": "4000.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0526,
+    "lng": 76.3187,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 98,
+   "created_at": "2026-10-15T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Sound & DJ",
+   "reference_url": "",
+   "security_deposit": "5000.00",
+   "min_units": 1,
+   "max_units": 3,
+   "capacity": null,
+   "features": [
+    "Operator included",
+    "DJ console"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000020",
+   "seller_id": "d0000000-0000-4000-8000-000000000004",
+   "title": "Yamaha R15 V3 (2021)",
+   "description": "Single owner, 14,000 km, serviced every 3,000 km.",
+   "price": "135000.00",
+   "original_price": null,
+   "category": "Vehicles",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0019,
+    "lng": 76.3039,
+    "address": "Palarivattom, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 201,
+   "created_at": "2026-10-14T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Bikes & Scooters",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000007",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "Rode studio condenser mic",
+   "description": "Barely used Rode condenser mic with shock mount and pop filter.",
+   "price": "4500.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "Like new",
+   "images": [
+    "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0534,
+    "lng": 76.3184,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 31,
+   "created_at": "2026-10-14T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "TV & Audio",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000032",
+   "seller_id": "d0000000-0000-4000-8000-000000000007",
+   "title": "Designer ethnic gown",
+   "description": "Hand-embroidered ivory gown, sizes S–L.",
+   "price": "2200.00",
+   "original_price": null,
+   "category": "Fashion",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9672,
+    "lng": 76.2848,
+    "address": "MG Road, Ernakulam"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 73,
+   "created_at": "2026-10-14T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Ethnic & Occasion",
+   "reference_url": "",
+   "security_deposit": "4000.00",
+   "min_units": 1,
+   "max_units": 3,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000028",
+   "seller_id": "d0000000-0000-4000-8000-000000000006",
+   "title": "Floral centrepieces & table decor",
+   "description": "Fresh-flower centrepieces, candles and runners styled to your colour theme.",
+   "price": "2800.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9677,
+    "lng": 76.3209,
+    "address": "Vyttila, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 66,
+   "created_at": "2026-10-13T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Stage & Decor",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": 2,
+   "capacity": null,
+   "features": [
+    "Flower decor",
+    "Setup included"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000014",
+   "seller_id": "d0000000-0000-4000-8000-000000000003",
+   "title": "Full-HD projector + 8 ft screen",
+   "description": "3500-lumen projector with tripod screen, HDMI and extension cables.",
+   "price": "1200.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0158,
+    "lng": 76.3415,
+    "address": "Kakkanad, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 81,
+   "created_at": "2026-10-13T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Projectors & Screens",
+   "reference_url": "",
+   "security_deposit": "3000.00",
+   "min_units": 1,
+   "max_units": 7,
+   "capacity": null,
+   "features": [
+    "Screen included",
+    "HDMI cable"
+   ],
+   "attributes": {
+    "brightness": "3500 lumens"
+   }
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000036",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "Queen bed with mattress — monthly",
+   "description": "Queen bed with a 6-inch mattress, delivered and assembled. Minimum 3 months.",
+   "price": "1800.00",
+   "original_price": null,
+   "category": "Furniture",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9976,
+    "lng": 76.2993,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "month",
+   "views": 87,
+   "created_at": "2026-10-12T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Beds & Mattresses",
+   "reference_url": "",
+   "security_deposit": "3000.00",
+   "min_units": 3,
+   "max_units": 24,
+   "capacity": null,
+   "features": [
+    "Delivery available",
+    "Setup included"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000009",
+   "seller_id": "d0000000-0000-4000-8000-000000000002",
+   "title": "Party hall — 80 guests",
+   "description": "Cosy hall for birthdays and get-togethers. Tables and chairs included; bring your own caterer.",
+   "price": "2500.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0258,
+    "lng": 76.309,
+    "address": "Edappally, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "hour",
+   "views": 133,
+   "created_at": "2026-10-12T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Halls & Venues",
+   "reference_url": "",
+   "security_deposit": "3000.00",
+   "min_units": 3,
+   "max_units": 12,
+   "capacity": 80,
+   "features": [
+    "AC",
+    "Parking",
+    "Power backup"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000021",
+   "seller_id": "d0000000-0000-4000-8000-000000000004",
+   "title": "Bosch cordless drill kit",
+   "description": "18 V drill with two batteries and a 30-piece bit set.",
+   "price": "200.00",
+   "original_price": null,
+   "category": "Tools & DIY",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0026,
+    "lng": 76.3037,
+    "address": "Palarivattom, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 44,
+   "created_at": "2026-10-11T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Power Tools",
+   "reference_url": "",
+   "security_deposit": "1500.00",
+   "min_units": 1,
+   "max_units": 7,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000003",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "Wireless mic kit (4 handheld)",
+   "description": "Four UHF wireless handhelds with receiver and spare batteries.",
+   "price": "600.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0533,
+    "lng": 76.319,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 64,
+   "created_at": "2026-10-11T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Sound & DJ",
+   "reference_url": "",
+   "security_deposit": "1000.00",
+   "min_units": 1,
+   "max_units": 14,
+   "capacity": null,
+   "features": [
+    "Wireless mics"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000012",
+   "seller_id": "d0000000-0000-4000-8000-000000000003",
+   "title": "Sony FE 50mm f/1.8 lens",
+   "description": "Sharp portrait prime for Sony E-mount bodies.",
+   "price": "350.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0155,
+    "lng": 76.342,
+    "address": "Kakkanad, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 54,
+   "created_at": "2026-10-10T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Cameras & Lenses",
+   "reference_url": "",
+   "security_deposit": "2000.00",
+   "min_units": 1,
+   "max_units": 14,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000033",
+   "seller_id": "d0000000-0000-4000-8000-000000000007",
+   "title": "Party-wear clearance — 20 pieces",
+   "description": "Twenty tops and dresses from last season, sizes M and L.",
+   "price": "6000.00",
+   "original_price": null,
+   "category": "Fashion",
+   "condition": "Like new",
+   "images": [
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9679,
+    "lng": 76.2846,
+    "address": "MG Road, Ernakulam"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 42,
+   "created_at": "2026-10-10T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Women",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000017",
+   "seller_id": "d0000000-0000-4000-8000-000000000004",
+   "title": "Road bike — Triban RC120",
+   "description": "Aluminium road bike, 16 speeds, helmet included.",
+   "price": "300.00",
+   "original_price": null,
+   "category": "Vehicles",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0023,
+    "lng": 76.3035,
+    "address": "Palarivattom, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 72,
+   "created_at": "2026-10-09T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Bicycles",
+   "reference_url": "",
+   "security_deposit": "2000.00",
+   "min_units": 1,
+   "max_units": 30,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000037",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "Mini fridge (90 L) — monthly",
+   "description": "Energy-efficient mini fridge, ideal for hostels and PGs.",
+   "price": "900.00",
+   "original_price": null,
+   "category": "Electronics",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9967,
+    "lng": 76.2991,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "month",
+   "views": 69,
+   "created_at": "2026-10-09T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Appliances",
+   "reference_url": "",
+   "security_deposit": "2000.00",
+   "min_units": 1,
+   "max_units": 12,
+   "capacity": null,
+   "features": [
+    "Delivery available"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000023",
+   "seller_id": "d0000000-0000-4000-8000-000000000005",
+   "title": "Bestseller novel bundle (10 books)",
+   "description": "Ten popular paperbacks in good condition.",
+   "price": "900.00",
+   "original_price": null,
+   "category": "Books",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0443,
+    "lng": 76.3255,
+    "address": "CUSAT, Kalamassery"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 48,
+   "created_at": "2026-10-08T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Novels",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000006",
+   "seller_id": "d0000000-0000-4000-8000-000000000001",
+   "title": "JBL Flip 5 portable speaker",
+   "description": "Waterproof Bluetooth speaker, 12-hour battery. Great for picnics and small get-togethers.",
+   "price": "250.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0525,
+    "lng": 76.3189,
+    "address": "Kalamassery, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 88,
+   "created_at": "2026-10-07T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Sound & DJ",
+   "reference_url": "",
+   "security_deposit": "1000.00",
+   "min_units": 1,
+   "max_units": 14,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000030",
+   "seller_id": "d0000000-0000-4000-8000-000000000006",
+   "title": "4-person camping tent",
+   "description": "Waterproof dome tent with groundsheet and two sleeping mats.",
+   "price": "350.00",
+   "original_price": null,
+   "category": "Sports & Outdoor",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9674,
+    "lng": 76.3211,
+    "address": "Vyttila, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 61,
+   "created_at": "2026-10-06T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Camping & Trekking",
+   "reference_url": "",
+   "security_deposit": "1500.00",
+   "min_units": 1,
+   "max_units": 10,
+   "capacity": null,
+   "features": [
+    "Waterproof"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000035",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "Accent lounge chair",
+   "description": "Mid-century style lounge chair with oak legs.",
+   "price": "4800.00",
+   "original_price": null,
+   "category": "Furniture",
+   "condition": "Good",
+   "images": [
+    "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9969,
+    "lng": 76.2999,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 51,
+   "created_at": "2026-10-05T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Sofas & Chairs",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000010",
+   "seller_id": "d0000000-0000-4000-8000-000000000002",
+   "title": "Conference hall with projector — 150 seats",
+   "description": "Theatre seating, projector, PA and high-speed Wi-Fi. Ideal for seminars and college events.",
+   "price": "1800.00",
+   "original_price": null,
+   "category": "Event & Sound",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0262,
+    "lng": 76.3081,
+    "address": "Edappally, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "hour",
+   "views": 76,
+   "created_at": "2026-10-04T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Halls & Venues",
+   "reference_url": "",
+   "security_deposit": "2000.00",
+   "min_units": 2,
+   "max_units": 10,
+   "capacity": 150,
+   "features": [
+    "AC",
+    "Parking",
+    "Power backup"
+   ],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000039",
+   "seller_id": "d0000000-0000-4000-8000-000000000008",
+   "title": "Gym bench + 40 kg dumbbell set",
+   "description": "Adjustable bench and chrome dumbbells, barely used.",
+   "price": "7500.00",
+   "original_price": null,
+   "category": "Sports & Outdoor",
+   "condition": "Like new",
+   "images": [
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 9.9966,
+    "lng": 76.2998,
+    "address": "Kaloor, Kochi"
+   },
+   "status": "available",
+   "listing_type": "sale",
+   "rent_duration": "day",
+   "views": 58,
+   "created_at": "2026-10-03T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Fitness",
+   "reference_url": "",
+   "security_deposit": "0.00",
+   "min_units": 1,
+   "max_units": null,
+   "capacity": null,
+   "features": [],
+   "attributes": {}
+  },
+  {
+   "id": "e0000000-0000-4000-8000-000000000018",
+   "seller_id": "d0000000-0000-4000-8000-000000000004",
+   "title": "City cycle with basket",
+   "description": "Comfortable single-speed cycle for daily commutes.",
+   "price": "120.00",
+   "original_price": null,
+   "category": "Vehicles",
+   "condition": "",
+   "images": [
+    "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=900&q=70&auto=format&fit=crop"
+   ],
+   "location": {
+    "lat": 10.0018,
+    "lng": 76.3036,
+    "address": "Palarivattom, Kochi"
+   },
+   "status": "available",
+   "listing_type": "rent",
+   "rent_duration": "day",
+   "views": 39,
+   "created_at": "2026-10-03T15:54:24.307Z",
+   "updated_at": "2026-10-23T15:54:24.307Z",
+   "subcategory": "Bicycles",
+   "reference_url": "",
+   "security_deposit": "1000.00",
+   "min_units": 1,
+   "max_units": 30,
+   "capacity": null,
+   "features": [
+    "Pickup only"
+   ],
+   "attributes": {}
+  }
+ ],
+ "sellers": [
+  {
+   "id": "d0000000-0000-4000-8000-000000000005",
+   "display_name": "Campus Corner Books",
+   "avatar_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Campus Corner Books",
+   "store_description": "Second-hand textbooks, novels and student laptops near CUSAT.",
+   "store_location": {
+    "lat": 10.0447,
+    "lng": 76.3256,
+    "address": "CUSAT, Kalamassery"
+   },
+   "store_category": "Books & Gadgets",
+   "store_hours": {
+    "open": "09:30",
+    "close": "19:30",
+    "closed_days": [
+     0
+    ]
+   },
+   "rating": "5.00",
+   "review_count": 0,
+   "kyc_status": "NOT_STARTED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000001",
+   "display_name": "Beat Box Sound & Lights",
+   "avatar_url": "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Beat Box Sound & Lights",
+   "store_description": "PA systems, DJ consoles and stage lighting for college fests, weddings and parties. Delivery and setup across Kochi.",
+   "store_location": {
+    "lat": 10.0531,
+    "lng": 76.3185,
+    "address": "Kalamassery, Kochi"
+   },
+   "store_category": "Sound & Lights",
+   "store_hours": {
+    "open": "09:00",
+    "close": "21:00"
+   },
+   "rating": "4.75",
+   "review_count": 2,
+   "kyc_status": "VERIFIED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000006",
+   "display_name": "Kochi Event Decor & Tents",
+   "avatar_url": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1530023367847-a683933f4172?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Kochi Event Decor & Tents",
+   "store_description": "Banquet chairs, round tables, floral decor and wedding cars for functions of any size.",
+   "store_location": {
+    "lat": 9.9673,
+    "lng": 76.3205,
+    "address": "Vyttila, Kochi"
+   },
+   "store_category": "Seating, Decor & Tents",
+   "store_hours": {
+    "open": "08:00",
+    "close": "21:00"
+   },
+   "rating": "5.00",
+   "review_count": 1,
+   "kyc_status": "VERIFIED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000007",
+   "display_name": "Urban Threads",
+   "avatar_url": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Urban Threads",
+   "store_description": "Silk sarees and designer outfits on rent for weddings and functions.",
+   "store_location": {
+    "lat": 9.9675,
+    "lng": 76.285,
+    "address": "MG Road, Ernakulam"
+   },
+   "store_category": "Ethnic Wear",
+   "store_hours": {
+    "open": "10:00",
+    "close": "21:00"
+   },
+   "rating": "5.00",
+   "review_count": 0,
+   "kyc_status": "NOT_STARTED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000008",
+   "display_name": "HomeNest Furniture",
+   "avatar_url": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "HomeNest Furniture",
+   "store_description": "Furniture and appliances for students and new families: buy outright or rent monthly.",
+   "store_location": {
+    "lat": 9.9971,
+    "lng": 76.2996,
+    "address": "Kaloor, Kochi"
+   },
+   "store_category": "Furniture & Appliances",
+   "store_hours": {
+    "open": "10:00",
+    "close": "20:00"
+   },
+   "rating": "4.50",
+   "review_count": 1,
+   "kyc_status": "VERIFIED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000002",
+   "display_name": "Grand Leela Convention Centre",
+   "avatar_url": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Grand Leela Convention Centre",
+   "store_description": "Banquet, party and conference halls with parking, in-house kitchen and power backup.",
+   "store_location": {
+    "lat": 10.0261,
+    "lng": 76.3086,
+    "address": "Edappally, Kochi"
+   },
+   "store_category": "Halls & Venues",
+   "store_hours": {
+    "open": "08:00",
+    "close": "22:00"
+   },
+   "rating": "4.50",
+   "review_count": 1,
+   "kyc_status": "VERIFIED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000003",
+   "display_name": "Shutter Rentals",
+   "avatar_url": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Shutter Rentals",
+   "store_description": "DSLRs, lenses, drones and projectors by the day. Every kit is cleaned and tested before pickup.",
+   "store_location": {
+    "lat": 10.0159,
+    "lng": 76.3419,
+    "address": "Kakkanad, Kochi"
+   },
+   "store_category": "Cameras & Drones",
+   "store_hours": {
+    "open": "10:00",
+    "close": "20:00"
+   },
+   "rating": "4.50",
+   "review_count": 2,
+   "kyc_status": "VERIFIED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  },
+  {
+   "id": "d0000000-0000-4000-8000-000000000004",
+   "display_name": "Pedal & Ride",
+   "avatar_url": "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=160&h=160&q=70&auto=format&fit=crop",
+   "cover_url": "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?w=1200&q=70&auto=format&fit=crop",
+   "is_seller": true,
+   "store_name": "Pedal & Ride",
+   "store_description": "Cycles, motorbikes and tools to rent by the day, plus a few pre-owned bikes for sale.",
+   "store_location": {
+    "lat": 10.0021,
+    "lng": 76.3034,
+    "address": "Palarivattom, Kochi"
+   },
+   "store_category": "Bikes & Cycles",
+   "store_hours": {
+    "open": "07:00",
+    "close": "20:00"
+   },
+   "rating": "4.00",
+   "review_count": 1,
+   "kyc_status": "NOT_STARTED",
+   "is_print_provider": false,
+   "print_price_bw": "2.00",
+   "print_price_color": "10.00",
+   "print_store_name": "",
+   "print_description": "",
+   "print_available_sizes": [
+    "A4"
+   ],
+   "created_at": "2026-10-23T15:54:24.307Z"
+  }
+ ]
+}

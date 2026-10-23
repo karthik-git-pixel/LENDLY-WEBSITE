@@ -28,7 +28,7 @@ export default function LanguageSelectorModal({ isOpen, onClose }: LanguageSelec
               width: 38,
               height: 38,
               borderRadius: 12,
-              background: 'rgba(249,115,22,0.15)',
+              background: 'rgba(22, 163, 74,0.15)',
               color: 'var(--primary-dark)',
               display: 'flex',
               alignItems: 'center',
@@ -69,7 +69,7 @@ export default function LanguageSelectorModal({ isOpen, onClose }: LanguageSelec
                   borderRadius: 16,
                   cursor: 'pointer',
                   border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                  background: isSelected ? 'rgba(249,115,22,0.08)' : 'var(--surface-hover)',
+                  background: isSelected ? 'rgba(22, 163, 74,0.08)' : 'var(--surface-hover)',
                   transition: 'all 0.15s ease'
                 }}
                 className="hover-scale"

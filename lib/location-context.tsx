@@ -46,7 +46,7 @@ const LocationContext = createContext<LocationContextValue | null>(null);
 const FIX_KEY = 'lendly_last_fix';
 const MANUAL_KEY = 'lendly_manual_place';
 const RADIUS_KEY = 'lendly_radius_km';
-export const DEFAULT_RADIUS_KM = 5;
+export const DEFAULT_RADIUS_KM = 15;
 
 function readJSON<T>(key: string): T | null {
   try {

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { updateUserProfile } from '@/lib/firestore';
-import { uploadImageToCloudinary } from '@/lib/cloudinary';
+import { uploadImage } from '@/lib/upload';
 import { useRouter } from 'next/navigation';
 import { 
   ShoppingBag, 
@@ -278,7 +278,7 @@ export default function ProfilePage() {
           >
             <div style={{
               width: 40, height: 40, borderRadius: 12,
-              background: 'rgba(249,115,22,0.15)',
+              background: 'rgba(22, 163, 74,0.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'var(--primary-dark)',
             }}>
@@ -399,7 +399,7 @@ export default function ProfilePage() {
                       if (!file || !profile?.uid) return;
                       try {
                         setUploadingAvatar(true);
-                        const url = await uploadImageToCloudinary(file, profile.uid, 'avatar');
+                        const url = await uploadImage(file, profile.uid, 'avatar');
                         setAvatarUrl(url);
                         toast.success('Photo uploaded from gallery!');
                       } catch (err: unknown) {
@@ -420,7 +420,7 @@ export default function ProfilePage() {
                       padding: '12px 16px',
                       borderRadius: 14,
                       border: '2px dashed var(--primary)',
-                      background: 'rgba(249, 115, 22, 0.08)',
+                      background: 'rgba(22, 163, 74, 0.08)',
                       color: 'var(--primary)',
                       fontSize: 13,
                       fontWeight: 800,
@@ -515,11 +515,11 @@ export default function ProfilePage() {
                 padding: '16px',
                 borderRadius: 16,
                 background: 'linear-gradient(135deg, rgba(254, 243, 199, 0.3) 0%, rgba(255, 255, 255, 0.9) 100%)',
-                border: '1px solid rgba(249, 115, 22, 0.3)'
+                border: '1px solid rgba(22, 163, 74, 0.3)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isPrintProvider ? 14 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ color: '#ea580c' }}><Printer size={20} /></div>
+                    <div style={{ color: '#15803d' }}><Printer size={20} /></div>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--foreground)' }}>Offer Print & Xerox Services</div>
                       <div style={{ fontSize: 11, color: 'var(--muted)' }}>Fulfill print orders for local neighbors</div>
@@ -534,7 +534,7 @@ export default function ProfilePage() {
                 </div>
 
                 {isPrintProvider && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10, paddingTop: 10, borderTop: '1px dashed rgba(249, 115, 22, 0.3)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10, paddingTop: 10, borderTop: '1px dashed rgba(22, 163, 74, 0.3)' }}>
                     <div>
                       <label className="input-label">Print Hub / Store Name</label>
                       <input

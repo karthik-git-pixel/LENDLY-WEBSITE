@@ -38,7 +38,7 @@ const MAIN_CATEGORIES: CategoryData[] = [
   { id: 'Cars', name: 'Cars', icon: <Car size={24} strokeWidth={2.1} />, bg: '#e0f2fe', color: '#0284c7' },
   { id: 'Properties', name: 'Properties', icon: <Building2 size={24} strokeWidth={2.1} />, bg: '#dcfce7', color: '#16a34a' },
   { id: 'Mobiles', name: 'Mobiles', icon: <Smartphone size={24} strokeWidth={2.1} />, bg: '#f3e8ff', color: '#9333ea' },
-  { id: 'Electronics', name: 'Electronics', icon: <Monitor size={24} strokeWidth={2.1} />, bg: '#ffedd5', color: '#ea580c' },
+  { id: 'Electronics', name: 'Electronics', icon: <Monitor size={24} strokeWidth={2.1} />, bg: '#dcfce7', color: '#15803d' },
   { id: 'More', name: 'More', icon: <MoreHorizontal size={24} strokeWidth={2.1} />, bg: '#f1f5f9', color: '#64748b' },
 ];
 
@@ -46,12 +46,12 @@ const MAIN_CATEGORIES: CategoryData[] = [
 const EXTENDED_CATEGORIES: CategoryData[] = [
   { id: 'Bikes', name: 'Bikes', icon: <Bike size={22} strokeWidth={2.1} />, bg: '#cffafe', color: '#0891b2' },
   { id: 'Fashion', name: 'Fashion', icon: <Shirt size={22} strokeWidth={2.1} />, bg: '#fef08a', color: '#ca8a04' },
-  { id: 'Furniture', name: 'Furniture', icon: <Armchair size={22} strokeWidth={2.1} />, bg: '#fed7aa', color: '#c2410c' },
+  { id: 'Furniture', name: 'Furniture', icon: <Armchair size={22} strokeWidth={2.1} />, bg: '#bbf7d0', color: '#166534' },
   { id: 'Commercial', name: 'Commercial', icon: <Truck size={22} strokeWidth={2.1} />, bg: '#fef3c7', color: '#d97706' },
   { id: 'Pets', name: 'Pets', icon: <Dog size={22} strokeWidth={2.1} />, bg: '#fce7f3', color: '#db2777' },
   { id: 'Books', name: 'Books', icon: <BookOpen size={22} strokeWidth={2.1} />, bg: '#e0e7ff', color: '#4f46e5' },
   { id: 'Services', name: 'Services', icon: <Wrench size={22} strokeWidth={2.1} />, bg: '#f3e8ff', color: '#7c3aed' },
-  { id: 'Jobs', name: 'Jobs', icon: <Briefcase size={22} strokeWidth={2.1} />, bg: '#ffedd5', color: '#ea580c' },
+  { id: 'Jobs', name: 'Jobs', icon: <Briefcase size={22} strokeWidth={2.1} />, bg: '#dcfce7', color: '#15803d' },
 ];
 
 export default function CategoryGridFilter({
@@ -130,7 +130,7 @@ export default function CategoryGridFilter({
       <div className="flex items-baseline justify-between gap-3 mb-2.5">
         <h2 className="m-0 text-sm font-extrabold text-[#0b2240] tracking-tight">Browse Categories</h2>
         <span className="text-[11.5px] font-semibold text-slate-500">
-          Showing <strong style={{ color: '#ea580c' }}>{activeName}</strong>
+          Showing <strong style={{ color: '#15803d' }}>{activeName}</strong>
         </span>
       </div>
 

@@ -39,11 +39,11 @@ interface CategoryItem {
 }
 
 const CATEGORIES: CategoryItem[] = [
-  { key: 'all', name: 'All', icon: LayoutGrid, color: '#f97316', bg: 'rgba(249, 115, 22, 0.14)' },
+  { key: 'all', name: 'All', icon: LayoutGrid, color: '#16a34a', bg: 'rgba(22, 163, 74, 0.14)' },
   { key: 'electronics', name: 'Electronics', icon: Laptop, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
   { key: 'books', name: 'Books', icon: BookOpen, color: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)' },
   { key: 'clothing', name: 'Clothing', icon: Shirt, color: '#ec4899', bg: 'rgba(236, 72, 153, 0.12)' },
-  { key: 'furniture', name: 'Furniture', icon: Armchair, color: '#ea580c', bg: 'rgba(234, 88, 12, 0.12)' },
+  { key: 'furniture', name: 'Furniture', icon: Armchair, color: '#15803d', bg: 'rgba(21, 128, 61, 0.12)' },
   { key: 'sports', name: 'Sports', icon: Dumbbell, color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
   { key: 'tools', name: 'Tools', icon: PenTool, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' },
   { key: 'food', name: 'Food', icon: Utensils, color: '#e11d48', bg: 'rgba(225, 29, 72, 0.12)' },
@@ -179,8 +179,8 @@ export default function DesktopSidebar({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(249, 115, 22, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <SlidersHorizontal size={14} style={{ color: '#ea580c' }} strokeWidth={2.4} />
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(22, 163, 74, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <SlidersHorizontal size={14} style={{ color: '#15803d' }} strokeWidth={2.4} />
             </div>
             <h3 style={{ fontSize: 13.5, fontWeight: 800, color: '#0b2240', margin: 0, letterSpacing: '-0.2px' }}>
               Sort & Refine
@@ -326,8 +326,8 @@ export default function DesktopSidebar({
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(249, 115, 22, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MapPin size={14} style={{ color: '#ea580c' }} strokeWidth={2.4} />
+              <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(22, 163, 74, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MapPin size={14} style={{ color: '#15803d' }} strokeWidth={2.4} />
               </div>
               <h3 style={{ fontSize: 13.5, fontWeight: 800, color: '#0b2240', margin: 0, letterSpacing: '-0.2px' }}>
                 Radius Distance
@@ -339,12 +339,12 @@ export default function DesktopSidebar({
               style={{
                 fontSize: 11.5,
                 fontWeight: 900,
-                color: '#c2410c',
-                background: 'linear-gradient(135deg, #ffedd5 0%, #fff7ed 100%)',
+                color: '#166534',
+                background: 'linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%)',
                 padding: '3px 9px',
                 borderRadius: 999,
-                border: '1px solid rgba(249, 115, 22, 0.35)',
-                boxShadow: '0 1px 4px rgba(249, 115, 22, 0.15)'
+                border: '1px solid rgba(22, 163, 74, 0.35)',
+                boxShadow: '0 1px 4px rgba(22, 163, 74, 0.15)'
               }}
             >
               {currentRadius} km
@@ -362,7 +362,7 @@ export default function DesktopSidebar({
             style={{
               width: '100%',
               height: 6,
-              accentColor: '#f97316',
+              accentColor: '#16a34a',
               cursor: 'pointer',
               marginBottom: 10
             }}
@@ -381,9 +381,9 @@ export default function DesktopSidebar({
                     flex: 1,
                     padding: '4px 0',
                     borderRadius: 8,
-                    border: `1px solid ${isSelected ? '#f97316' : '#e2e8f0'}`,
-                    background: isSelected ? 'rgba(249, 115, 22, 0.12)' : '#f8fafc',
-                    color: isSelected ? '#c2410c' : '#64748b',
+                    border: `1px solid ${isSelected ? '#16a34a' : '#e2e8f0'}`,
+                    background: isSelected ? 'rgba(22, 163, 74, 0.12)' : '#f8fafc',
+                    color: isSelected ? '#166534' : '#64748b',
                     fontSize: 11,
                     fontWeight: isSelected ? 800 : 600,
                     cursor: 'pointer',
@@ -409,8 +409,8 @@ export default function DesktopSidebar({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(249, 115, 22, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Tag size={14} style={{ color: '#ea580c' }} strokeWidth={2.4} />
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(22, 163, 74, 0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Tag size={14} style={{ color: '#15803d' }} strokeWidth={2.4} />
             </div>
             <h3 style={{ fontSize: 13.5, fontWeight: 800, color: '#0b2240', margin: 0, letterSpacing: '-0.2px' }}>
               Categories
@@ -434,12 +434,12 @@ export default function DesktopSidebar({
                     borderRadius: 12,
                     border: 'none',
                     cursor: 'pointer',
-                    background: isSelected ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' : 'transparent',
+                    background: isSelected ? 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)' : 'transparent',
                     color: isSelected ? '#ffffff' : '#334155',
                     fontWeight: isSelected ? 800 : 600,
                     fontSize: 12.5,
                     transition: 'all 0.15s ease',
-                    boxShadow: isSelected ? '0 4px 12px rgba(234, 88, 12, 0.28)' : 'none'
+                    boxShadow: isSelected ? '0 4px 12px rgba(21, 128, 61, 0.28)' : 'none'
                   }}
                 >
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

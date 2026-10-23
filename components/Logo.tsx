@@ -14,7 +14,7 @@ interface LogoProps {
   style?: React.CSSProperties;
 }
 
-const ORANGE = '#f97316';
+const ORANGE = '#16a34a';
 const NAVY = '#0b2240';
 const WHITE = '#ffffff';
 

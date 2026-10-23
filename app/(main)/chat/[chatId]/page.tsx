@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useRef, use } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { listenToMessages, sendMessage, type ChatMessage } from '@/lib/chat';
+import { getChatRoom, listenToMessages, sendMessage, type ChatMessage } from '@/lib/chat';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Send, MessageSquare, Lock, ShieldCheck } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
@@ -45,22 +43,15 @@ export default function ChatRoomPage({ params }: { params: Promise<{ chatId: str
     // Fetch room metadata (requires profile for determining "other" user)
     if (!profile?.uid) return;
     let cancelled = false;
-    getDoc(doc(db, 'chats', chatId)).then(snap => {
-      if (cancelled) return;
-      if (snap.exists()) {
-        const data = snap.data();
-        const currentUid = profile.uid;
-        const otherId = data.participants?.find((p: string) => p !== currentUid) || '';
-        setOtherName(data.participantNames?.[otherId] || 'User');
-        setOtherAvatar(data.participantAvatars?.[otherId] || '');
-        if (data.productTitle) {
-          setProductTitle(data.productTitle);
-        }
-        // Determine if current user is seller (index 1) or buyer (index 0)
-        if (data.participants && data.participants.length > 1) {
-          setIsSeller(data.participants[1] === currentUid);
-        }
-      }
+    getChatRoom(chatId).then(room => {
+      if (cancelled || !room) return;
+      const currentUid = profile.uid;
+      const otherId = room.participants.find(p => p !== currentUid) || '';
+      setOtherName(room.participantNames[otherId] || 'User');
+      setOtherAvatar(room.participantAvatars[otherId] || '');
+      if (room.productTitle) setProductTitle(room.productTitle);
+      // participants are [opener, other]; the opener is usually the buyer
+      if (room.participants.length > 1) setIsSeller(room.participants[1] === currentUid);
     }).catch(err => {
       console.error('Failed to load chat room info:', err);
     });
@@ -112,7 +103,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ chatId: str
     }}>
       {/* Standard Professional Top Header */}
       <div style={{
-        position: 'sticky', top: 0, zIndex: 100,
+        position: 'sticky', top: 'var(--chat-top, 0px)', zIndex: 100,
         background: 'var(--surface)', borderBottom: '1px solid var(--border-color)',
         padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12,
         boxShadow: 'var(--shadow-sm)'

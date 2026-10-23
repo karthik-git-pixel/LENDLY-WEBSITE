@@ -1,105 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth-context';
-import { getNotifications, markNotificationRead, type AppNotification } from '@/lib/firestore';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Bell, ShoppingBag, Calendar, Package, AlertTriangle, MessageSquare, Zap, Star, Printer, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-
-const ICONS: Record<AppNotification['type'], LucideIcon> = {
-  order: ShoppingBag,
-  rental_reminder: Calendar,
-  new_product: Package,
-  report: AlertTriangle,
-  inquiry: MessageSquare,
-  back_in_stock: Zap,
-  review: Star,
-  print_order: Printer,
-};
+import { useAuth } from '@/lib/auth-context';
+import {
+  getNotifications, markAllNotificationsRead, markNotificationRead, subscribeToNotifications, type AppNotification,
+} from '@/lib/supabase-db';
+import { notificationHref } from '@/components/NotificationPopover';
+import { toMillis } from '@/lib/time';
 
 export default function NotificationsPage() {
-  const { profile } = useAuth();
   const router = useRouter();
-  const [notifs, setNotifs] = useState<AppNotification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, loading } = useAuth();
+  const [items, setItems] = useState<AppNotification[] | null>(null);
+  const uid = profile?.uid;
 
   useEffect(() => {
-    if (!profile?.uid) return;
-    const uid = profile.uid;
+    if (!loading && !user) router.replace('/login?redirect=/notifications');
+  }, [loading, user, router]);
 
+  useEffect(() => {
+    if (!uid) return;
     let cancelled = false;
+    const refresh = () => { getNotifications(uid).then(n => { if (!cancelled) setItems(n); }); };
+    refresh();
+    const unsubscribe = subscribeToNotifications(uid, refresh);
+    return () => { cancelled = true; unsubscribe(); };
+  }, [uid]);
 
-    async function load() {
-      try {
-        const n = await getNotifications(uid);
-        if (!cancelled) {
-          setNotifs(n);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [profile]);
-
-  const handleClick = async (n: AppNotification) => {
-    if (!n.read) await markNotificationRead(n.id);
-    setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x));
+  const open = (n: AppNotification) => {
+    if (!n.read) void markNotificationRead(n.id);
+    const href = notificationHref(n);
+    if (href) router.push(href);
   };
 
   return (
-    <div>
+    <div className="ln-page">
       <div className="top-header">
-        <button onClick={() => router.back()} className="btn-ghost" style={{ padding: 8 }}><ArrowLeft size={20} /></button>
-        <h1 style={{ fontSize: 18, fontWeight: 700 }}>Notifications</h1>
-        <div style={{ width: 36 }} />
+        <button type="button" className="ln-icon-btn" onClick={() => router.back()} aria-label="Back"><ArrowLeft size={20} /></button>
+        <h1 style={{ fontSize: 17, fontWeight: 800 }}>Notifications</h1>
+        <button type="button" className="ln-text-btn" onClick={() => uid && markAllNotificationsRead(uid).then(() => setItems(prev => prev?.map(n => ({ ...n, read: true })) ?? null))}>Mark all read</button>
       </div>
-      <div className="page-container">
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner spinner-lg" /></div>
-        ) : notifs.length === 0 ? (
-          <div className="empty-state">
-            <Bell size={48} />
-            <h3>No notifications</h3>
-            <p>You&apos;ll see updates here</p>
-          </div>
+      <div className="ln-shell" style={{ paddingTop: 10 }}>
+        {!items ? (
+          <div className="ln-skel" style={{ height: 160, borderRadius: 16 }} />
+        ) : items.length === 0 ? (
+          <div className="ln-empty"><Bell size={28} aria-hidden="true" /><h2>You&apos;re all caught up</h2><p>Booking requests, messages and updates appear here.</p></div>
         ) : (
-          notifs.map(n => {
-            const Icon = ICONS[n.type] || Bell;
-            return (
-              <div key={n.id} className="glass-card" onClick={() => handleClick(n)} style={{
-                padding: 14, marginBottom: 8, display: 'flex', gap: 12, cursor: 'pointer',
-                opacity: n.read ? 0.6 : 1,
-              }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: 'rgba(139,92,246,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--primary-light)', flexShrink: 0,
-                }}>
-                  <Icon size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{n.title}</div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>{n.body}</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
-                    {n.createdAt?.toDate ? formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true }) : ''}
-                  </div>
-                </div>
-                {!n.read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 4 }} />}
-              </div>
-            );
-          })
+          items.map(n => (
+            <button type="button" key={n.id} className={`ln-notif ${n.read ? '' : 'is-unread'}`} onClick={() => open(n)}>
+              <span className="ln-notif-icon"><Bell size={17} /></span>
+              <span className="ln-notif-text">
+                <strong>{n.title}</strong>
+                {n.body && <span>{n.body}</span>}
+                {toMillis(n.createdAt) > 0 && <em>{formatDistanceToNow(new Date(toMillis(n.createdAt)), { addSuffix: true })}</em>}
+              </span>
+              {!n.read && <span className="ln-notif-dot" aria-label="Unread" />}
+            </button>
+          ))
         )}
       </div>
     </div>

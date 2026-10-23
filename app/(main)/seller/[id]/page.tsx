@@ -1,526 +1,202 @@
 'use client';
 
+import { use, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useState, useEffect, use } from 'react';
-import { useAuth } from '@/lib/auth-context';
-import {
-  getUserProfile,
-  getProductsBySeller,
-  isSubscribed,
-  subscribeToSeller,
-  unsubscribeFromSeller,
-  updateUserProfile,
-  type Product,
-  type UserProfile
-} from '@/lib/firestore';
-import { uploadImageToCloudinary } from '@/lib/cloudinary';
-import { createOrGetChatRoom } from '@/lib/chat';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import {
-  ArrowLeft, MapPin, Bell, BellOff, MessageCircle, ExternalLink,
-  Package, Star, ShieldCheck, Share2, Search, Filter, Camera, Store,
-  CheckCircle2, Sparkles, Navigation
-} from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, BadgeCheck, Clock, Heart, MapPin, MessageCircle, Package, Share2, ShieldCheck, Star } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/lib/auth-context';
+import { useRequireAuth } from '@/lib/useRequireAuth';
+import { useUserLocation } from '@/lib/location-context';
+import {
+  getProductsBySeller, getReviewsForSeller, getUserProfile, hasPoint, isSubscribed, subscribeToSeller, unsubscribeFromSeller,
+  type Product, type Review, type UserProfile,
+} from '@/lib/supabase-db';
+import { openChat } from '@/lib/chat';
+import { formatDistance, getDistanceKm } from '@/lib/location';
+import { getOpenState } from '@/lib/store-hours';
+import { rentUnitInfo } from '@/lib/catalog';
+import { formatDate } from '@/lib/time';
+import { avatarFor } from '@/components/AppHeader';
 
-const MapView = dynamic(() => import('@/components/MapView'), { ssr: false });
-
-export default function SellerProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default function ShopPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { profile, refreshProfile } = useAuth();
   const router = useRouter();
-  const [seller, setSeller] = useState<UserProfile | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [subscribed, setSubscribed] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  // Filters within seller store
-  const [filterType, setFilterType] = useState<'all' | 'sale' | 'rent'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Seller Own Edit State
-  const isOwnProfile = profile?.uid === id;
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
+  const { profile } = useAuth();
+  const { requireAuth } = useRequireAuth();
+  const { coords } = useUserLocation();
+  const [shop, setShop] = useState<UserProfile | null>(null);
+  const [items, setItems] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [tab, setTab] = useState('All Products');
 
   useEffect(() => {
     let cancelled = false;
+    Promise.all([getUserProfile(id), getProductsBySeller(id), getReviewsForSeller(id)]).then(([s, p, r]) => {
+      if (cancelled) return;
+      setShop(s);
+      setItems(p.filter(x => x.status !== 'paused'));
+      setReviews(r);
+      setLoaded(true);
+    });
+    return () => { cancelled = true; };
+  }, [id]);
 
-    async function load() {
-      try {
-        const s = await getUserProfile(id);
-        if (cancelled) return;
+  useEffect(() => {
+    if (!profile || profile.uid === id) return;
+    let cancelled = false;
+    isSubscribed(profile.uid, id).then(v => { if (!cancelled) setFollowing(v); });
+    return () => { cancelled = true; };
+  }, [profile, id]);
 
-        setSeller(s);
-        if (s) {
-          const prods = await getProductsBySeller(id);
-          if (cancelled) return;
+  const tabs = useMemo(() => ['All Products', ...new Set(items.map(i => i.subcategory || i.category).filter(Boolean))], [items]);
+  const shown = tab === 'All Products' ? items : items.filter(i => (i.subcategory || i.category) === tab);
 
-          setProducts(prods.filter(p => p.status === 'available'));
-          if (profile) {
-            const sub = await isSubscribed(profile.uid, id);
-            if (!cancelled) {
-              setSubscribed(sub);
-            }
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
+  if (!loaded) return <div className="ln-page"><div className="sp-hero ln-skel" /></div>;
+  if (!shop) {
+    return (
+      <div className="ln-page"><div className="ln-shell">
+        <div className="ln-empty"><h2>Shop not found</h2><div className="ln-empty-actions"><Link href="/home" className="ln-btn ln-btn-primary">Back home</Link></div></div>
+      </div></div>
+    );
+  }
 
-    void load();
+  const name = shop.storeName || shop.displayName || 'Lendly shop';
+  const where = hasPoint(shop.storeLocation) ? shop.storeLocation : items.find(i => hasPoint(i.location))?.location;
+  const distance = where ? getDistanceKm(coords, where) : null;
+  const open = getOpenState(shop.storeHours);
+  const cover = shop.coverUrl || items.find(i => i.images?.length)?.images[0] || '';
+  const isMine = profile?.uid === shop.uid;
+  const rentals = items.filter(i => i.listingType === 'rent').length;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [id, profile]);
-
-  const handleSubscribe = async () => {
-    if (!profile) return toast.error('Please log in to follow this seller');
-    if (subscribed) {
-      await unsubscribeFromSeller(profile.uid, id);
-      setSubscribed(false);
-      toast.success('Unfollowed seller notifications');
-    } else {
-      await subscribeToSeller(profile.uid, id);
-      setSubscribed(true);
-      toast.success('Subscribed! You will receive alerts for new listings.');
-    }
+  const chat = async () => {
+    if (!requireAuth(undefined, 'Log in to chat with this shop')) return;
+    try { router.push(`/chat/${await openChat(shop.uid)}`); }
+    catch (err) { toast.error(err instanceof Error ? err.message : 'Could not open chat'); }
   };
 
-  const handleChat = async () => {
-    if (!profile || !seller) return router.push('/login');
-    if (profile.uid === seller.uid) return toast.error('This is your own seller store');
-
+  const follow = async () => {
+    if (!profile || !requireAuth(undefined, 'Log in to follow shops')) return;
     try {
-      const roomId = await createOrGetChatRoom(
-        profile.uid,
-        seller.uid,
-        profile.displayName || 'Buyer',
-        seller.storeName || seller.displayName || 'Seller',
-        profile.avatarUrl || '',
-        seller.avatarUrl || '',
-      );
-      router.push(`/chat/${roomId}`);
+      if (following) await unsubscribeFromSeller(profile.uid, shop.uid);
+      else await subscribeToSeller(profile.uid, shop.uid);
+      setFollowing(!following);
+      toast.success(following ? 'Unfollowed' : 'Following — you\'ll see their new listings');
     } catch (err) {
-      console.error('Chat error:', err);
-      toast.error('Failed to open chat');
+      toast.error(err instanceof Error ? err.message : 'Could not update');
     }
   };
 
-  const handleShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : '';
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: seller?.storeName || seller?.displayName || 'Lendly Seller',
-          text: `Check out ${seller?.storeName || seller?.displayName}'s store on Lendly!`,
-          url,
-        });
-      } catch {
-        // Fallback
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success('Store link copied to clipboard!');
-    }
+  const share = async () => {
+    if (navigator.share) await navigator.share({ title: name, url: window.location.href }).catch(() => undefined);
+    else { await navigator.clipboard.writeText(window.location.href); toast.success('Link copied'); }
   };
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
-    try {
-      setUploadingAvatar(true);
-      const url = await uploadImageToCloudinary(file, profile.uid, 'avatar');
-      await updateUserProfile(profile.uid, { avatarUrl: url });
-      setSeller(prev => prev ? { ...prev, avatarUrl: url } : prev);
-      await refreshProfile();
-      toast.success('Profile picture updated!');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to upload photo';
-      toast.error(msg);
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
-
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
-    try {
-      setUploadingCover(true);
-      const url = await uploadImageToCloudinary(file, profile.uid, 'cover');
-      await updateUserProfile(profile.uid, { coverUrl: url });
-      setSeller(prev => prev ? { ...prev, coverUrl: url } : prev);
-      await refreshProfile();
-      toast.success('Cover image updated!');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to upload cover';
-      toast.error(msg);
-    } finally {
-      setUploadingCover(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="spinner spinner-lg" />
-      </div>
-    );
-  }
-
-  if (!seller) {
-    return (
-      <div className="page-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <Store size={48} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
-        <h2 style={{ fontSize: 20, fontWeight: 800 }}>Seller Not Found</h2>
-        <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4 }}>This seller store may have been deactivated or moved.</p>
-        <button onClick={() => router.push('/home')} className="btn-primary" style={{ marginTop: 20, padding: '10px 24px' }}>
-          Back to Home
-        </button>
-      </div>
-    );
-  }
-
-  const filteredProducts = products.filter(p => {
-    const matchesType = filterType === 'all' ||
-      (filterType === 'sale' && p.listingType !== 'rent') ||
-      (filterType === 'rent' && p.listingType === 'rent');
-    const matchesSearch = !searchQuery.trim() ||
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesType && matchesSearch;
-  });
 
   return (
-    <div style={{ paddingBottom: 90 }} className="fade-in">
-      {/* Hidden File Inputs for Seller's Own Store */}
-      {isOwnProfile && (
-        <>
-          <input id="public-seller-avatar" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
-          <input id="public-seller-cover" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverUpload} />
-        </>
-      )}
-
-      {/* Top Header Bar */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button onClick={() => router.back()} className="btn-ghost" style={{ padding: '8px 12px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <ArrowLeft size={18} />
-          <span>Back</span>
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={handleShare} className="btn-secondary" style={{ padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Share2 size={15} />
-            <span>Share Store</span>
-          </button>
-          {isOwnProfile && (
-            <button onClick={() => router.push('/seller/dashboard')} className="btn-primary" style={{ padding: '8px 16px', borderRadius: 12, fontSize: 13, fontWeight: 800 }}>
-              Seller Dashboard
-            </button>
-          )}
+    <div className="ln-page">
+      <div className="sp-hero">
+        {cover ? <Image src={cover} alt="" fill sizes="100vw" loading="eager" fetchPriority="high" /> : null}
+        <div className="sp-hero-bar">
+          <button type="button" className="ln-icon-btn sp-round" onClick={() => router.back()} aria-label="Back"><ArrowLeft size={20} /></button>
+          <div>
+            {!isMine && (
+              <button type="button" className="ln-icon-btn sp-round" onClick={follow} aria-pressed={following} aria-label={following ? 'Unfollow shop' : 'Follow shop'}>
+                <Heart size={19} fill={following ? '#ef4444' : 'none'} color={following ? '#ef4444' : 'currentColor'} />
+              </button>
+            )}
+            <button type="button" className="ln-icon-btn sp-round" onClick={share} aria-label="Share shop"><Share2 size={19} /></button>
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 1100, margin: '16px auto 0', padding: '0 20px' }}>
-        {/* Luxury Cover Banner Card */}
-        <div className="glass-card" style={{ borderRadius: 26, overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', marginBottom: 28 }}>
-          {/* Cover Image */}
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            height: 220,
-            background: seller.coverUrl
-              ? `url(${seller.coverUrl}) center/cover no-repeat`
-              : 'linear-gradient(135deg, #0b2240 0%, #1e293b 50%, #2b3a55 100%)',
-          }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)' }} />
+      <div className="ln-shell">
+        <div className="sp-card">
+          <h1>
+            <Image src={avatarFor(name, shop.avatarUrl)} alt="" width={40} height={40} unoptimized style={{ borderRadius: 12, objectFit: 'cover' }} />
+            {name}
+            {shop.kycStatus === 'VERIFIED' && <BadgeCheck size={20} className="ln-verified" aria-label="Verified shop" />}
+          </h1>
+          <p className="sp-meta">
+            <span><Star size={15} fill="#f59e0b" color="#f59e0b" aria-hidden="true" /> <strong>{shop.reviewCount ? Number(shop.rating).toFixed(1) : 'New'}</strong>{shop.reviewCount ? ` (${shop.reviewCount} reviews)` : ''}</span>
+            {distance !== null && <span><MapPin size={15} aria-hidden="true" /> {formatDistance(distance)}</span>}
+            {open && <span><span className={open.open ? 'ln-open' : ''}>{open.open ? 'Open' : 'Closed'}</span> · {open.label.split('·').pop()?.trim()}</span>}
+          </p>
+          {shop.storeDescription && <p className="ln-note" style={{ color: 'var(--ln-sub)' }}>{shop.storeDescription}</p>}
 
-            {/* Cover Upload Button for Owner */}
-            {isOwnProfile && (
-              <button
-                onClick={() => document.getElementById('public-seller-cover')?.click()}
-                disabled={uploadingCover}
-                className="btn-secondary"
-                style={{
-                  position: 'absolute', top: 16, right: 16,
-                  padding: '7px 14px', borderRadius: 12, fontSize: 12, fontWeight: 700,
-                  background: 'rgba(0,0,0,0.65)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.25)',
-                  backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', gap: 6, zIndex: 2
-                }}
-              >
-                <Camera size={14} />
-                <span>{uploadingCover ? 'Uploading...' : 'Update Cover'}</span>
-              </button>
-            )}
+          <div className="sp-features">
+            <div><ShieldCheck size={20} aria-hidden="true" />{shop.kycStatus === 'VERIFIED' ? 'Verified Shop' : 'Lendly Shop'}</div>
+            <div><Package size={20} aria-hidden="true" />{rentals} Rentals</div>
+            <div><Clock size={20} aria-hidden="true" />Since {formatDate(shop.createdAt) || 'recently'}</div>
+            <div><BadgeCheck size={20} aria-hidden="true" />QR handover</div>
           </div>
 
-          {/* Profile Details & Store Metrics */}
-          <div style={{ padding: '0 26px 26px', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 20, marginTop: -50 }}>
-              {/* Avatar + Main Title */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20 }}>
-                <div style={{ position: 'relative', width: 96, height: 96, borderRadius: 26, overflow: 'hidden', border: '4px solid var(--surface)', background: 'var(--surface)', boxShadow: 'var(--shadow-lg)', flexShrink: 0 }}>
-                  <Image
-                    src={seller.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.displayName)}&background=0b2240&color=fff`}
-                    alt=""
-                    fill
-                    unoptimized
-                    style={{ objectFit: 'cover' }}
-                  />
-
-                  {/* Avatar Upload for Owner */}
-                  {isOwnProfile && (
-                    <button
-                      onClick={() => document.getElementById('public-seller-avatar')?.click()}
-                      disabled={uploadingAvatar}
-                      style={{
-                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: 'none', cursor: 'pointer', opacity: uploadingAvatar ? 1 : 0,
-                        transition: 'opacity 0.2s', color: '#ffffff'
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                      onMouseLeave={e => { if (!uploadingAvatar) e.currentTarget.style.opacity = '0'; }}
-                    >
-                      <Camera size={22} />
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ paddingBottom: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 900, color: '#ffffff', textShadow: '0 2px 8px rgba(0,0,0,0.7)', margin: 0, letterSpacing: '-0.5px' }}>
-                      {seller.storeName || seller.displayName}
-                    </h1>
-                    <span className="badge badge-primary" style={{ fontSize: 11.5, padding: '3px 9px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <ShieldCheck size={13} /> Verified Seller
-                    </span>
-                  </div>
-
-                  <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '4px 0 0', fontWeight: 500, maxWidth: 550 }}>
-                    {seller.storeDescription || 'Local verified seller providing instant neighborhood pickup & rentals.'}
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8, fontSize: 12.5, flexWrap: 'wrap' }}>
-                    <span style={{ color: '#ea580c', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Star size={14} fill="#fca311" /> {seller.rating?.toFixed(1) || '5.0'} ({seller.reviewCount || 0} reviews)
-                    </span>
-                    <span style={{ color: 'var(--muted)' }}>•</span>
-                    <span style={{ color: 'var(--foreground)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <MapPin size={13} style={{ color: 'var(--primary)' }} />
-                      {seller.location?.address?.split(',').slice(0, 2).join(',') || 'Local Area'}
-                    </span>
-                    <span style={{ color: 'var(--muted)' }}>•</span>
-                    <span style={{ color: 'var(--primary-dark)', fontWeight: 700 }}>
-                      {products.length} active listing{products.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons: Chat & Follow */}
-              {!isOwnProfile && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 6 }}>
-                  <button
-                    onClick={handleSubscribe}
-                    className={subscribed ? 'btn-secondary' : 'btn-secondary'}
-                    style={{
-                      padding: '10px 18px', borderRadius: 14, fontSize: 13.5, fontWeight: 700,
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      background: subscribed ? 'rgba(249,115,22,0.12)' : 'var(--surface-hover)',
-                      borderColor: subscribed ? 'var(--primary)' : 'var(--border-color)'
-                    }}
-                  >
-                    {subscribed ? (
-                      <>
-                        <BellOff size={16} style={{ color: 'var(--primary-dark)' }} />
-                        <span style={{ color: 'var(--primary-dark)' }}>Following</span>
-                      </>
-                    ) : (
-                      <>
-                        <Bell size={16} />
-                        <span>Follow Seller</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button onClick={handleChat} className="btn-primary" style={{ padding: '10px 22px', borderRadius: 14, fontSize: 13.5, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <MessageCircle size={17} />
-                    <span>Chat & Inquire</span>
-                  </button>
-                </div>
-              )}
+          {!isMine && (
+            <div style={{ display: 'flex', gap: 10, margin: '12px 0 4px' }}>
+              <button type="button" className="ln-btn ln-btn-primary" style={{ flex: 1 }} onClick={chat}><MessageCircle size={17} aria-hidden="true" /> Chat with shop</button>
+              <button type="button" className="ln-btn ln-btn-ghost" onClick={follow}>{following ? 'Following' : 'Follow'}</button>
             </div>
-          </div>
-        </div>
-
-        {/* Store Inventory Section */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 14 }}>
-            <div>
-              <h2 style={{ fontSize: 19, fontWeight: 900, color: 'var(--foreground)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Package size={19} style={{ color: 'var(--primary)' }} />
-                Store Catalog ({filteredProducts.length})
-              </h2>
-              <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0 0' }}>
-                Browse verified items available for immediate pickup or rental
-              </p>
-            </div>
-
-            {/* Filter and Search within Seller Store */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-hover)', padding: '6px 12px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-                <Search size={15} style={{ color: 'var(--muted)' }} />
-                <input
-                  type="text"
-                  placeholder="Search in store..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12.5, color: 'var(--foreground)', width: 140 }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: 4, background: 'var(--surface-hover)', padding: 3, borderRadius: 12, border: '1px solid var(--border-color)' }}>
-                {[
-                  { id: 'all', label: 'All' },
-                  { id: 'sale', label: 'Buy' },
-                  { id: 'rent', label: 'Rent' },
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setFilterType(t.id as 'all' | 'sale' | 'rent')}
-                    style={{
-                      padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer',
-                      background: filterType === t.id ? 'var(--foreground)' : 'transparent',
-                      color: filterType === t.id ? '#ffffff' : 'var(--muted)',
-                      transition: 'all 0.15s'
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Product Cards Grid */}
-          {filteredProducts.length === 0 ? (
-            <div className="glass-card" style={{ padding: 40, textAlign: 'center', borderRadius: 24 }}>
-              <Package size={44} style={{ opacity: 0.3, margin: '0 auto 10px' }} />
-              <h3 style={{ fontSize: 16, fontWeight: 800 }}>No matching listings</h3>
-              <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>This seller currently has no items matching your criteria.</p>
-            </div>
-          ) : (
-            <div className="product-grid">
-              {filteredProducts.map(product => (
-                <div
-                  key={product.id}
-                  className="product-card"
-                  onClick={() => router.push(`/product/${product.id}`)}
-                  style={{
-                    borderRadius: 22,
-                    overflow: 'hidden',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--surface)',
-                    boxShadow: 'var(--shadow-sm)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div style={{ position: 'relative', width: '100%', height: '190px', overflow: 'hidden', background: 'var(--surface-hover)' }}>
-                    <Image
-                      src={product.images?.[0] || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=60'}
-                      alt={product.title}
-                      fill
-                      unoptimized
-                      style={{ objectFit: 'cover', transition: 'transform 0.3s ease' }}
-                    />
-                    <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 2 }}>
-                      <span className={`badge ${product.listingType === 'rent' ? 'badge-warning' : 'badge-primary'}`} style={{ padding: '4px 10px', fontSize: 11, fontWeight: 800 }}>
-                        {product.listingType === 'rent' ? 'Rent' : 'Buy'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{
-                      fontWeight: 800, fontSize: 15, color: 'var(--foreground)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 4
-                    }}>
-                      {product.title}
-                    </div>
-
-                    <div style={{ fontSize: 11.5, color: '#64748b', opacity: 0.85, fontWeight: 500, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {product.category}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 8, borderTop: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--foreground)' }}>
-                        ₹{product.price.toLocaleString()}
-                        {product.listingType === 'rent' && <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--muted)' }}>/day</span>}
-                      </div>
-
-                      <span className="btn-ghost" style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, color: 'var(--primary-dark)' }}>
-                        View Details ➔
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          )}
+          {isMine && (
+            <div style={{ display: 'flex', gap: 10, margin: '12px 0 4px' }}>
+              <Link href="/sell" className="ln-btn ln-btn-primary" style={{ flex: 1 }}>Open seller hub</Link>
+              <Link href="/profile" className="ln-btn ln-btn-ghost">Edit shop</Link>
             </div>
           )}
         </div>
 
-        {/* Location & Neighborhood Directions Card */}
-        {seller.location && seller.location.lat !== 0 && (
-          <div className="glass-card" style={{ padding: 22, borderRadius: 24, marginBottom: 28 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
-              <div>
-                <h3 style={{ fontSize: 16, fontWeight: 900, color: 'var(--foreground)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <MapPin size={17} style={{ color: 'var(--primary)' }} />
-                  Store Location & Neighborhood Proximity
-                </h3>
-                <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '2px 0 0' }}>
-                  {seller.location.address || 'Neighborhood verified local address'}
-                </p>
-              </div>
+        <div className="ln-underline-tabs" role="tablist" style={{ marginTop: 8 }}>
+          {tabs.map(t => (
+            <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>{t}</button>
+          ))}
+        </div>
 
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${seller.location.lat},${seller.location.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: 'none' }}
-              >
-                <button className="btn-secondary" style={{ padding: '8px 14px', borderRadius: 12, fontSize: 12.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Navigation size={14} style={{ color: 'var(--primary-dark)' }} />
-                  <span>Get Directions</span>
-                  <ExternalLink size={12} />
-                </button>
-              </a>
-            </div>
-
-            <div style={{ height: 220, borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-              <MapView
-                center={seller.storeLocation || seller.location}
-                sellers={[{ ...seller, distance: 0 }]}
-                products={[]}
-                radiusKm={2}
-                onSellerClick={() => {}}
-                onProductClick={() => {}}
-              />
-            </div>
+        {shown.length === 0 ? (
+          <div className="ln-empty"><h2>No listings yet</h2></div>
+        ) : (
+          <div className="sp-grid">
+            {shown.map(p => (
+              <Link key={p.id} href={`/product/${p.id}`} className="sp-item">
+                <span className="sp-item-img">
+                  {p.images?.[0] && <Image src={p.images[0]} alt={p.title} fill sizes="(max-width: 767px) 50vw, 25vw" />}
+                  <span className={`ln-tag ${p.listingType === 'rent' ? 'ln-tag-rent' : ''}`}>{p.listingType === 'rent' ? 'RENT' : 'SALE'}</span>
+                </span>
+                <span className="sp-item-body">
+                  <h3>{p.title}</h3>
+                  <span className="sp-item-price">
+                    ₹{Math.round(p.price).toLocaleString('en-IN')}
+                    {p.listingType === 'rent' && <small> / {rentUnitInfo(p.rentDuration).short}</small>}
+                  </span>
+                  <span className="sp-item-foot">
+                    <span style={{ fontSize: 12, color: 'var(--ln-sub)' }}>
+                      {p.status === 'available' ? (p.capacity ? `Up to ${p.capacity} guests` : p.condition || 'Available') : p.status}
+                    </span>
+                    <span className="sp-add">{p.listingType === 'rent' ? 'Book' : 'Buy'}</span>
+                  </span>
+                </span>
+              </Link>
+            ))}
           </div>
+        )}
+
+        {reviews.length > 0 && (
+          <section className="ln-section">
+            <h2 className="ln-section-title">Reviews</h2>
+            <ul className="pd-reviews" style={{ marginTop: 10 }}>
+              {reviews.slice(0, 6).map(r => (
+                <li key={r.id}>
+                  <div className="pd-review-head">
+                    <strong>{r.buyerName}</strong>
+                    <span className="ln-rating"><Star size={11} fill="currentColor" aria-hidden="true" /> {r.rating.toFixed(1)}</span>
+                    <em>{formatDate(r.createdAt)}</em>
+                  </div>
+                  {r.comment && <p>{r.comment}</p>}
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </div>
     </div>

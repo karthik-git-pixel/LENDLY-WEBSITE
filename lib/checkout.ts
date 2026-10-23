@@ -84,7 +84,7 @@ export async function payOnline({ kind, payload, description, prefill }: Checkou
       description,
       order_id: order.id,
       prefill,
-      theme: { color: '#f97316' },
+      theme: { color: '#16a34a' },
       handler: async (response: RazorpayResponse) => {
         try {
           const verifyRes = await authFetch(verifyUrl, { method: 'POST', body: JSON.stringify(response) });

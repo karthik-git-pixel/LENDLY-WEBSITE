@@ -114,10 +114,10 @@ export default function MobileHeader({ radius = 30, onRadiusChange }: MobileHead
                   borderRadius: 999,
                   border: 'none',
                   background: 'transparent',
-                  color: '#ea580c',
+                  color: '#15803d',
                 }}
               >
-                <MapPin size={13} style={{ color: '#f97316', flexShrink: 0 }} strokeWidth={2.4} />
+                <MapPin size={13} style={{ color: '#16a34a', flexShrink: 0 }} strokeWidth={2.4} />
                 <span
                   style={{
                     maxWidth: 96,
@@ -129,7 +129,7 @@ export default function MobileHeader({ radius = 30, onRadiusChange }: MobileHead
                   {locationText}
                 </span>
                 <span style={{ color: '#cbd5e1' }}>•</span>
-                <span style={{ color: '#f97316', fontWeight: 800 }}>{radius}km</span>
+                <span style={{ color: '#16a34a', fontWeight: 800 }}>{radius}km</span>
               </button>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function MobileHeader({ radius = 30, onRadiusChange }: MobileHead
                     width: 7,
                     height: 7,
                     borderRadius: '50%',
-                    background: '#f97316',
+                    background: '#16a34a',
                     border: '1.5px solid #ffffff',
                   }}
                 />
@@ -184,8 +184,8 @@ export default function MobileHeader({ radius = 30, onRadiusChange }: MobileHead
                   width: 40,
                   height: 40,
                   borderRadius: '50%',
-                  border: '2px solid #f97316',
-                  boxShadow: '0 2px 8px rgba(249,115,22,0.25)',
+                  border: '2px solid #16a34a',
+                  boxShadow: '0 2px 8px rgba(22, 163, 74,0.25)',
                   display: 'block',
                   overflow: 'hidden',
                   background: '#f1f5f9',
@@ -282,9 +282,9 @@ export default function MobileHeader({ radius = 30, onRadiusChange }: MobileHead
                 height: 42,
                 flexShrink: 0,
                 borderRadius: 14,
-                border: `1px solid ${showRadius ? '#f97316' : 'var(--border-color)'}`,
-                background: showRadius ? 'rgba(249, 115, 22, 0.12)' : 'var(--surface)',
-                color: showRadius ? '#ea580c' : '#0b2240',
+                border: `1px solid ${showRadius ? '#16a34a' : 'var(--border-color)'}`,
+                background: showRadius ? 'rgba(22, 163, 74, 0.12)' : 'var(--surface)',
+                color: showRadius ? '#15803d' : '#0b2240',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

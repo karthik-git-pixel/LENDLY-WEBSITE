@@ -216,7 +216,7 @@ export default function MapView({
           <Circle
             center={[user?.lat ?? center.lat, user?.lng ?? center.lng]}
             radius={radiusKm * 1000}
-            pathOptions={{ color: '#f97316', weight: 1.5, dashArray: '6 6', fillColor: '#f97316', fillOpacity: 0.05 }}
+            pathOptions={{ color: '#16a34a', weight: 1.5, dashArray: '6 6', fillColor: '#16a34a', fillOpacity: 0.05 }}
           />
         )}
 

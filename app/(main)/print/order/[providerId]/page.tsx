@@ -5,9 +5,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useRequireAuth } from '@/lib/useRequireAuth';
-import { getUserProfile, type UserProfile } from '@/lib/firestore';
-import { uploadDocumentToCloudinary } from '@/lib/cloudinary';
-import { authFetch } from '@/lib/auth-fetch';
+import { createPrintOrder, getUserProfile, type UserProfile } from '@/lib/firestore';
+import { uploadPrintDocument } from '@/lib/upload';
+import { payOnline, useOnlinePayments } from '@/lib/checkout';
 import {
   ArrowLeft,
   Upload,
@@ -34,6 +34,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
   const { profile } = useAuth();
   const { requireAuth, isAuthenticated } = useRequireAuth();
   const router = useRouter();
+  const onlineEnabled = useOnlinePayments();
 
   const [provider, setProvider] = useState<UserProfile | null>(null);
   const [loadingProvider, setLoadingProvider] = useState(true);
@@ -90,14 +91,6 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
     };
   }, [providerId]);
 
-  // Load Razorpay SDK
-  useEffect(() => {
-    if (document.getElementById('razorpay-script')) return;
-    const script = document.createElement('script');
-    script.id = 'razorpay-script';
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    document.body.appendChild(script);
-  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -158,113 +151,45 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
     setUploading(true);
 
     try {
-      // 1. Upload files to Cloudinary concurrently
+      if (!profile) throw new Error('Please log in again');
+      // 1. Documents go to the private print-docs bucket (only you and the shop can open them)
       toast.loading('Uploading documents securely...', { id: 'upload-toast' });
-      const uploadedDocs = await Promise.all(
-        files.map(file => uploadDocumentToCloudinary(file, profile?.uid || 'guest', 'print_jobs'))
-      );
+      const uploadedDocs = await Promise.all(files.map(file => uploadPrintDocument(file, providerId, profile.uid)));
       toast.dismiss('upload-toast');
       setUploading(false);
 
-      const fileUrls = uploadedDocs.map(d => d.url);
-      const fileNames = uploadedDocs.map(d => d.name);
-
-      // 2. Create Razorpay Payment Order
-      const res = await authFetch('/api/payment/create-print-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          providerId,
-          amount: totalAmount,
-          pageCount,
-          copies,
-          colorMode,
-          paperSize,
-          sides,
-        }),
-      });
-
-      const orderData = await res.json();
-      if (!res.ok) throw new Error(orderData.error || 'Failed to initialize payment');
-
-      const providerTitle = provider?.printStoreName || provider?.storeName || provider?.displayName || 'Print Hub';
-
-      // 3. Trigger Razorpay Checkout Modal
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.replace(/^"|"$/g, '') || '',
-        amount: orderData.amount,
-        currency: orderData.currency || 'INR',
-        name: 'Lendly Print Service',
-        description: `Print Job: ${pageCount} pages × ${copies} copies (${colorMode.toUpperCase()}) - ${providerTitle}`,
-        image: 'https://api.dicebear.com/7.x/bottts/svg?seed=printcart',
-        order_id: orderData.id,
-        handler: async function (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
-          try {
-            toast.loading('Verifying payment and confirming print job...', { id: 'verify-toast' });
-
-            const verifyRes = await authFetch('/api/payment/verify-print-order', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                providerId,
-                amount: totalAmount,
-                fileUrls,
-                fileNames,
-                pageCount,
-                copies,
-                colorMode,
-                orientation,
-                paperSize,
-                sides,
-                specialInstructions,
-                deliveryAddress: deliveryAddress.trim(),
-                deliveryLocation: profile?.location || { lat: 0, lng: 0 },
-                buyerName: profile?.displayName || 'Customer',
-                buyerPhone: buyerPhone.trim(),
-              }),
-            });
-
-            const verifyData = await verifyRes.json();
-            toast.dismiss('verify-toast');
-
-            if (!verifyRes.ok) throw new Error(verifyData.error || 'Payment verification failed');
-
-            toast.success('Print Order Placed! The provider has been notified.');
-            router.push(`/print/orders`);
-          } catch (err: unknown) {
-            console.error('Verification Error:', err);
-            const msg = err instanceof Error ? err.message : 'Verification failed';
-            toast.error(msg);
-          }
-        },
-        prefill: {
-          name: profile?.displayName || '',
-          email: profile?.email || '',
-          contact: buyerPhone || profile?.phone || '',
-        },
-        theme: {
-          color: '#f97316',
-        },
+      const order = {
+        providerId,
+        filePaths: uploadedDocs.map(d => d.path),
+        fileNames: uploadedDocs.map(d => d.name),
+        copies,
+        pageCount,
+        colorMode,
+        paperSize,
+        orientation,
+        sides,
+        specialInstructions,
+        deliveryAddress: deliveryAddress.trim(),
+        phone: buyerPhone.trim(),
       };
 
-      const RazorpayConstructor = (window as unknown as { Razorpay: new (opts: unknown) => { open: () => void; on: (event: string, cb: (r: { error: { description: string } }) => void) => void } }).Razorpay;
-      if (!RazorpayConstructor) {
-        throw new Error('Razorpay SDK not loaded. Please check your internet connection.');
+      // 2. Pay online when it's set up, otherwise pay the shop on delivery
+      if (onlineEnabled) {
+        await payOnline({
+          kind: 'print_order',
+          payload: order,
+          description: `Print job: ${pageCount} pages × ${copies}`,
+          prefill: { name: profile.displayName, email: profile.email, contact: buyerPhone || profile.phone },
+        });
+      } else {
+        await createPrintOrder(order);
       }
-
-      const razorpay = new RazorpayConstructor(options);
-      razorpay.on('payment.failed', function (response: { error: { description: string } }) {
-        toast.error(`Payment failed: ${response.error.description}`);
-      });
-      razorpay.open();
+      toast.success('Print order placed! The shop has been notified.');
+      router.push('/print/orders');
     } catch (err: unknown) {
-      console.error(err);
       toast.dismiss('upload-toast');
-      const msg = err instanceof Error ? err.message : 'Failed to start print order';
-      toast.error(msg);
+      const msg = err instanceof Error ? err.message : 'Failed to place the print order';
+      if (msg !== 'Payment cancelled') toast.error(msg);
     } finally {
       setSubmitting(false);
       setUploading(false);
@@ -321,7 +246,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
             justifyContent: 'center',
             padding: '28px 20px',
             borderRadius: 16,
-            border: '2px dashed rgba(249, 115, 22, 0.45)',
+            border: '2px dashed rgba(22, 163, 74, 0.45)',
             background: 'linear-gradient(135deg, rgba(254, 243, 199, 0.25) 0%, rgba(255, 255, 255, 0.8) 100%)',
             cursor: 'pointer',
             textAlign: 'center',
@@ -337,9 +262,9 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
             />
             <div style={{
               width: 48, height: 48, borderRadius: '50%',
-              background: '#ffffff', border: '1px solid rgba(249, 115, 22, 0.3)',
+              background: '#ffffff', border: '1px solid rgba(22, 163, 74, 0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#ea580c', marginBottom: 10, boxShadow: '0 2px 8px rgba(194, 65, 12, 0.08)'
+              color: '#15803d', marginBottom: 10, boxShadow: '0 2px 8px rgba(194, 65, 12, 0.08)'
             }}>
               <Upload size={22} />
             </div>
@@ -422,7 +347,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                   borderRadius: 14,
                   cursor: 'pointer',
                   border: colorMode === 'bw' ? '2.5px solid var(--primary)' : '1px solid var(--border-color)',
-                  background: colorMode === 'bw' ? 'rgba(249, 115, 22, 0.08)' : 'var(--surface)',
+                  background: colorMode === 'bw' ? 'rgba(22, 163, 74, 0.08)' : 'var(--surface)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
@@ -448,7 +373,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                   borderRadius: 14,
                   cursor: 'pointer',
                   border: colorMode === 'color' ? '2.5px solid var(--primary)' : '1px solid var(--border-color)',
-                  background: colorMode === 'color' ? 'rgba(249, 115, 22, 0.08)' : 'var(--surface)',
+                  background: colorMode === 'color' ? 'rgba(22, 163, 74, 0.08)' : 'var(--surface)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
@@ -464,7 +389,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--foreground)' }}>Vibrant Color</div>
-                  <div style={{ fontSize: 12, color: '#ea580c', fontWeight: 700 }}>₹{rateColor} / page</div>
+                  <div style={{ fontSize: 12, color: '#15803d', fontWeight: 700 }}>₹{rateColor} / page</div>
                 </div>
               </div>
             </div>
@@ -513,7 +438,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                   style={{
                     flex: 1, padding: '8px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
                     border: orientation === 'portrait' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                    background: orientation === 'portrait' ? 'rgba(249, 115, 22, 0.1)' : 'var(--surface)',
+                    background: orientation === 'portrait' ? 'rgba(22, 163, 74, 0.1)' : 'var(--surface)',
                     color: orientation === 'portrait' ? 'var(--primary-dark)' : 'var(--foreground)',
                     cursor: 'pointer'
                   }}
@@ -526,7 +451,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                   style={{
                     flex: 1, padding: '8px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
                     border: orientation === 'landscape' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                    background: orientation === 'landscape' ? 'rgba(249, 115, 22, 0.1)' : 'var(--surface)',
+                    background: orientation === 'landscape' ? 'rgba(22, 163, 74, 0.1)' : 'var(--surface)',
                     color: orientation === 'landscape' ? 'var(--primary-dark)' : 'var(--foreground)',
                     cursor: 'pointer'
                   }}
@@ -547,7 +472,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                   style={{
                     flex: 1, padding: '8px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
                     border: sides === 'single' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                    background: sides === 'single' ? 'rgba(249, 115, 22, 0.1)' : 'var(--surface)',
+                    background: sides === 'single' ? 'rgba(22, 163, 74, 0.1)' : 'var(--surface)',
                     color: sides === 'single' ? 'var(--primary-dark)' : 'var(--foreground)',
                     cursor: 'pointer'
                   }}
@@ -560,7 +485,7 @@ export default function PrintOrderConfiguratorPage({ params }: { params: Promise
                   style={{
                     flex: 1, padding: '8px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
                     border: sides === 'double' ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                    background: sides === 'double' ? 'rgba(249, 115, 22, 0.1)' : 'var(--surface)',
+                    background: sides === 'double' ? 'rgba(22, 163, 74, 0.1)' : 'var(--surface)',
                     color: sides === 'double' ? 'var(--primary-dark)' : 'var(--foreground)',
                     cursor: 'pointer'
                   }}

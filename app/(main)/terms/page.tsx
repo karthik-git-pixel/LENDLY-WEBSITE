@@ -24,7 +24,7 @@ export default function TermsPage() {
       <div className="page-container" style={{ maxWidth: 800 }}>
         <div className="glass-card" style={{ padding: 24, borderRadius: 20, marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <div style={{ background: 'rgba(249, 115, 22, 0.15)', padding: 12, borderRadius: 14, color: 'var(--primary)' }}>
+            <div style={{ background: 'rgba(22, 163, 74, 0.15)', padding: 12, borderRadius: 14, color: 'var(--primary)' }}>
               <FileText size={24} />
             </div>
             <div>

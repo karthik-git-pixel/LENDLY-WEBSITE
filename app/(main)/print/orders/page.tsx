@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { listenToPrintOrdersByBuyer, type PrintOrder } from '@/lib/firestore';
+import { getPrintDocumentUrl } from '@/lib/upload';
 import {
   Printer,
   FileText,
@@ -146,7 +147,7 @@ export default function BuyerPrintOrdersPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {displayedOrders.map(order => {
-              const timeStr = order.createdAt ? formatDistanceToNow(new Date(order.createdAt.toMillis?.() || Date.now()), { addSuffix: true }) : 'Just now';
+              const timeStr = order.createdAt ? formatDistanceToNow(new Date(order.createdAt), { addSuffix: true }) : 'Just now';
 
               return (
                 <div
@@ -197,7 +198,7 @@ export default function BuyerPrintOrdersPage() {
                     <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--foreground)' }}>
                       <strong>{order.paperSize}</strong> • {order.pageCount} Pages • {order.copies} {order.copies > 1 ? 'Copies' : 'Copy'}
                     </div>
-                    <div style={{ fontSize: 12, color: order.colorMode === 'color' ? '#ea580c' : '#475569', fontWeight: 800 }}>
+                    <div style={{ fontSize: 12, color: order.colorMode === 'color' ? '#15803d' : '#475569', fontWeight: 800 }}>
                       {order.colorMode === 'color' ? '🎨 Full Color' : '⚫ Black & White'}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600 }}>
@@ -218,9 +219,8 @@ export default function BuyerPrintOrdersPage() {
                         {order.fileNames.map((name, i) => (
                           <a
                             key={i}
-                            href={order.fileUrls?.[i] || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href="#"
+                            onClick={async e => { e.preventDefault(); const path = order.filePaths[i]; if (path) window.open(await getPrintDocumentUrl(path), '_blank', 'noopener'); }}
                             style={{
                               display: 'inline-flex', alignItems: 'center', gap: 4,
                               padding: '4px 10px', borderRadius: 8, background: '#f1f5f9',

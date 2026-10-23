@@ -134,7 +134,7 @@ export default function PrintServicesPage() {
         {/* ================= HERO POSTER BANNER ================= */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #fdf6ee 0%, #faf0e6 50%, #f6e4d2 100%)',
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #faf0e6 50%, #f6e4d2 100%)',
             borderRadius: 24,
             padding: '24px 20px 22px 20px',
             position: 'relative',
@@ -147,7 +147,7 @@ export default function PrintServicesPage() {
           {/* Ambient Glow */}
           <div style={{
             position: 'absolute', top: -30, right: -30, width: 200, height: 200,
-            borderRadius: '50%', background: 'radial-gradient(circle, rgba(249, 115, 22, 0.18) 0%, transparent 70%)',
+            borderRadius: '50%', background: 'radial-gradient(circle, rgba(22, 163, 74, 0.18) 0%, transparent 70%)',
             pointerEvents: 'none'
           }} />
 
@@ -156,10 +156,10 @@ export default function PrintServicesPage() {
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '4px 10px', borderRadius: 999,
-                background: '#ffffff', border: '1px solid rgba(249, 115, 22, 0.3)',
-                fontSize: 11, fontWeight: 800, color: '#c2410c', marginBottom: 10
+                background: '#ffffff', border: '1px solid rgba(22, 163, 74, 0.3)',
+                fontSize: 11, fontWeight: 800, color: '#166534', marginBottom: 10
               }}>
-                <Printer size={13} style={{ color: '#ea580c' }} />
+                <Printer size={13} style={{ color: '#15803d' }} />
                 <span>ON-DEMAND LOCAL PRINTING</span>
               </div>
 
@@ -185,7 +185,7 @@ export default function PrintServicesPage() {
                   border: '1px solid rgba(220, 190, 165, 0.5)', borderRadius: 12,
                   padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8
                 }}>
-                  <div style={{ color: '#ea580c' }}><FileText size={18} /></div>
+                  <div style={{ color: '#15803d' }}><FileText size={18} /></div>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 800, color: '#0b2240' }}>1. Upload File</div>
                     <div style={{ fontSize: 10, color: '#7c2d12' }}>PDF or High-Res Image</div>
@@ -197,7 +197,7 @@ export default function PrintServicesPage() {
                   border: '1px solid rgba(220, 190, 165, 0.5)', borderRadius: 12,
                   padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8
                 }}>
-                  <div style={{ color: '#ea580c' }}><Layers size={18} /></div>
+                  <div style={{ color: '#15803d' }}><Layers size={18} /></div>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 800, color: '#0b2240' }}>2. Choose Specs</div>
                     <div style={{ fontSize: 10, color: '#7c2d12' }}>B&W / Color / Size</div>
@@ -209,7 +209,7 @@ export default function PrintServicesPage() {
                   border: '1px solid rgba(220, 190, 165, 0.5)', borderRadius: 12,
                   padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8
                 }}>
-                  <div style={{ color: '#ea580c' }}><Truck size={18} /></div>
+                  <div style={{ color: '#15803d' }}><Truck size={18} /></div>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 800, color: '#0b2240' }}>3. Doorstep Handover</div>
                     <div style={{ fontSize: 10, color: '#7c2d12' }}>Fast QR Verification</div>
@@ -306,8 +306,8 @@ export default function PrintServicesPage() {
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, fontSize: 11 }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: '#c2410c', fontWeight: 800 }}>
-                            <Star size={12} style={{ fill: '#fca311', color: '#fca311' }} />
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: '#166534', fontWeight: 800 }}>
+                            <Star size={12} style={{ fill: '#16a34a', color: '#16a34a' }} />
                             <span>{provider.rating ? provider.rating.toFixed(1) : '5.0'}</span>
                           </span>
                           <span style={{ color: 'var(--muted)' }}>({provider.reviewCount || 1} verified orders)</span>
@@ -324,10 +324,10 @@ export default function PrintServicesPage() {
                         B&W: <strong style={{ color: '#0f172a' }}>₹{bwRate}</strong>/page
                       </div>
                       <div style={{
-                        background: 'rgba(249, 115, 22, 0.12)', padding: '3px 8px', borderRadius: 8,
-                        fontSize: 11, fontWeight: 700, color: '#c2410c', border: '1px solid rgba(249, 115, 22, 0.3)'
+                        background: 'rgba(22, 163, 74, 0.12)', padding: '3px 8px', borderRadius: 8,
+                        fontSize: 11, fontWeight: 700, color: '#166534', border: '1px solid rgba(22, 163, 74, 0.3)'
                       }}>
-                        Color: <strong style={{ color: '#ea580c' }}>₹{colorRate}</strong>/page
+                        Color: <strong style={{ color: '#15803d' }}>₹{colorRate}</strong>/page
                       </div>
                     </div>
                   </div>

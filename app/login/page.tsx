@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { getUserProfile } from '@/lib/firestore';
+import { getMyProfile } from '@/lib/firestore';
 import { getErrorMessage } from '@/lib/error-utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -28,7 +28,7 @@ export default function LoginPage() {
     try {
       const loggedUser = await signIn(email, password);
       if (loggedUser) {
-        const profile = await getUserProfile(loggedUser.id);
+        const profile = await getMyProfile();
         if (profile && profile.displayName && profile.phone) {
           toast.success(`Welcome back, ${profile.displayName.split(' ')[0]}!`);
           router.push(redirectTo);
@@ -126,7 +126,7 @@ export default function LoginPage() {
               <label className="input-label" style={{ fontSize: 12.5, fontWeight: 600, color: '#334155', margin: 0, display: 'block' }}>Password</label>
               <Link 
                 href={`/forgot-password${redirectTo !== '/home' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} 
-                style={{ fontSize: 12, fontWeight: 600, color: '#f97316', textDecoration: 'none' }}
+                style={{ fontSize: 12, fontWeight: 600, color: '#16a34a', textDecoration: 'none' }}
               >
                 Forgot password?
               </Link>
@@ -162,7 +162,7 @@ export default function LoginPage() {
             style={{
               width: '100%', padding: '14px 18px', fontSize: 15, fontWeight: 700, borderRadius: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: '0 4px 14px rgba(249, 115, 22, 0.3)'
+              boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
             }}
             disabled={loading}
           >
@@ -176,7 +176,7 @@ export default function LoginPage() {
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13.5, color: '#64748b', fontWeight: 500 }}>
           Don&apos;t have an account?{' '}
-          <Link href={`/register${redirectTo !== '/home' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} style={{ color: '#f97316', textDecoration: 'none', fontWeight: 700 }}>
+          <Link href={`/register${redirectTo !== '/home' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} style={{ color: '#16a34a', textDecoration: 'none', fontWeight: 700 }}>
             Create Account
           </Link>
         </p>

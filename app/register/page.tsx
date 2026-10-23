@@ -257,7 +257,7 @@ export default function RegisterPage() {
                 style={{
                   width: '100%', padding: '14px 18px', fontSize: 15, fontWeight: 700, borderRadius: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  boxShadow: '0 4px 14px rgba(249, 115, 22, 0.3)'
+                  boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
                 }}
                 disabled={loading}
               >
@@ -271,7 +271,7 @@ export default function RegisterPage() {
 
             <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13.5, color: '#64748b', fontWeight: 500 }}>
               Already have an account?{' '}
-              <Link href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} style={{ color: '#f97316', textDecoration: 'none', fontWeight: 700 }}>
+              <Link href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} style={{ color: '#16a34a', textDecoration: 'none', fontWeight: 700 }}>
                 Sign In
               </Link>
             </p>

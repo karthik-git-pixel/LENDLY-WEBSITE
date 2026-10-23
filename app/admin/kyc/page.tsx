@@ -109,7 +109,7 @@ export default function AdminKYCPage() {
                     <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>ID: {app.uid}</p>
                     <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>Email: {app.kycData?.personal?.email || app.email}</p>
                   </div>
-                  <div style={{ background: 'rgba(249,115,22,0.1)', color: 'var(--accent)', padding: '4px 8px', borderRadius: 8, fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ background: 'rgba(22, 163, 74,0.1)', color: 'var(--accent)', padding: '4px 8px', borderRadius: 8, fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Clock size={12} /> PENDING
                   </div>
                 </div>

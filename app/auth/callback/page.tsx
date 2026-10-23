@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { getUserProfile } from '@/lib/firestore';
+import { getMyProfile } from '@/lib/firestore';
 import Logo from '@/components/Logo';
 import toast from 'react-hot-toast';
 
@@ -38,7 +38,7 @@ function CallbackHandler() {
 
         if (session?.user) {
           setStatusMessage('Checking your Lendly account...');
-          const profile = await getUserProfile(session.user.id);
+          const profile = await getMyProfile();
 
           if (profile && profile.displayName && profile.phone) {
             toast.success(`Welcome back, ${profile.displayName.split(' ')[0]}!`);
@@ -55,7 +55,7 @@ function CallbackHandler() {
           if (session?.user) {
             subscription.unsubscribe();
             setStatusMessage('Setting up your profile...');
-            const profile = await getUserProfile(session.user.id);
+            const profile = await getMyProfile();
             if (profile && profile.displayName && profile.phone) {
               router.replace(redirectTo);
             } else {
@@ -114,7 +114,7 @@ function CallbackHandler() {
             position: 'absolute',
             inset: -8,
             borderRadius: '50%',
-            border: '2px dashed #f97316',
+            border: '2px dashed #16a34a',
             animation: 'spin 6s linear infinite',
             pointerEvents: 'none',
             opacity: 0.6
@@ -130,7 +130,7 @@ function CallbackHandler() {
           </p>
         </div>
 
-        <div className="spinner" style={{ width: 28, height: 28, borderWidth: 3, borderColor: '#f97316', borderTopColor: 'transparent' }} />
+        <div className="spinner" style={{ width: 28, height: 28, borderWidth: 3, borderColor: '#16a34a', borderTopColor: 'transparent' }} />
       </div>
     </div>
   );

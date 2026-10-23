@@ -23,7 +23,7 @@ export default function AppSplashScreen({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'radial-gradient(circle at 50% 38%, rgba(249, 115, 22, 0.16) 0%, rgba(248, 250, 252, 0.98) 62%, #f8fafc 100%)',
+        background: 'radial-gradient(circle at 50% 38%, rgba(22, 163, 74, 0.16) 0%, rgba(248, 250, 252, 0.98) 62%, #f8fafc 100%)',
         color: '#0b2240',
         overflow: 'hidden',
         padding: 24,
@@ -174,7 +174,7 @@ export default function AppSplashScreen({
           width: 380,
           height: 380,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(249, 115, 22, 0.25) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(22, 163, 74, 0.25) 0%, transparent 70%)',
           pointerEvents: 'none',
           filter: 'blur(36px)'
         }}
@@ -200,7 +200,7 @@ export default function AppSplashScreen({
             width: 130,
             height: 48,
             borderRadius: '50%',
-            border: '2px solid rgba(249, 115, 22, 0.65)',
+            border: '2px solid rgba(22, 163, 74, 0.65)',
             animation: 'rcRadarRipple 2.4s cubic-bezier(0.2, 0.8, 0.4, 1) infinite',
             pointerEvents: 'none'
           }}
@@ -212,7 +212,7 @@ export default function AppSplashScreen({
             width: 130,
             height: 48,
             borderRadius: '50%',
-            border: '2px solid rgba(249, 115, 22, 0.45)',
+            border: '2px solid rgba(22, 163, 74, 0.45)',
             animation: 'rcRadarRipple 2.4s cubic-bezier(0.2, 0.8, 0.4, 1) infinite 0.8s',
             pointerEvents: 'none'
           }}
@@ -224,7 +224,7 @@ export default function AppSplashScreen({
             width: 130,
             height: 48,
             borderRadius: '50%',
-            border: '1.5px solid rgba(234, 88, 12, 0.3)',
+            border: '1.5px solid rgba(21, 128, 61, 0.3)',
             animation: 'rcRadarRipple 2.4s cubic-bezier(0.2, 0.8, 0.4, 1) infinite 1.6s',
             pointerEvents: 'none'
           }}
@@ -243,7 +243,7 @@ export default function AppSplashScreen({
             cy="95"
             rx="110"
             ry="55"
-            stroke="#f97316"
+            stroke="#16a34a"
             strokeWidth="2.2"
             strokeDasharray="7 7"
             strokeLinecap="round"
@@ -271,7 +271,7 @@ export default function AppSplashScreen({
               background: '#ffffff',
               display: 'grid',
               placeItems: 'center',
-              boxShadow: '0 18px 36px -12px rgba(249, 115, 22, 0.55), 0 0 0 6px rgba(249, 115, 22, 0.08)',
+              boxShadow: '0 18px 36px -12px rgba(22, 163, 74, 0.55), 0 0 0 6px rgba(22, 163, 74, 0.08)',
             }}
           >
             <Logo size={66} />
@@ -292,8 +292,8 @@ export default function AppSplashScreen({
             height: 44,
             borderRadius: '50%',
             background: '#ffffff',
-            border: '2.2px solid #f97316',
-            boxShadow: '0 6px 16px rgba(249, 115, 22, 0.35)',
+            border: '2.2px solid #16a34a',
+            boxShadow: '0 6px 16px rgba(22, 163, 74, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -317,8 +317,8 @@ export default function AppSplashScreen({
             height: 44,
             borderRadius: '50%',
             background: '#ffffff',
-            border: '2.2px solid #f97316',
-            boxShadow: '0 6px 16px rgba(249, 115, 22, 0.35)',
+            border: '2.2px solid #16a34a',
+            boxShadow: '0 6px 16px rgba(22, 163, 74, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -342,8 +342,8 @@ export default function AppSplashScreen({
             height: 44,
             borderRadius: '50%',
             background: '#ffffff',
-            border: '2.2px solid #f97316',
-            boxShadow: '0 6px 16px rgba(249, 115, 22, 0.35)',
+            border: '2.2px solid #16a34a',
+            boxShadow: '0 6px 16px rgba(22, 163, 74, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -367,8 +367,8 @@ export default function AppSplashScreen({
             height: 44,
             borderRadius: '50%',
             background: '#ffffff',
-            border: '2.2px solid #f97316',
-            boxShadow: '0 6px 16px rgba(249, 115, 22, 0.35)',
+            border: '2.2px solid #16a34a',
+            boxShadow: '0 6px 16px rgba(22, 163, 74, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -417,7 +417,7 @@ export default function AppSplashScreen({
               position: 'absolute',
               inset: 0,
               width: '100%',
-              background: 'linear-gradient(90deg, transparent, #f97316, #ea580c, transparent)',
+              background: 'linear-gradient(90deg, transparent, #16a34a, #15803d, transparent)',
               animation: 'rcShimmerBar 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite'
             }}
           />

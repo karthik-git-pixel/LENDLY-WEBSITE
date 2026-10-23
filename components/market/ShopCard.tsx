@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { BadgeCheck, Star } from 'lucide-react';
-import { formatDistance } from '@/lib/location';
+import { BadgeCheck, Heart, Star } from 'lucide-react';
+import { areaName, formatDistance } from '@/lib/location';
 import { getOpenState } from '@/lib/store-hours';
 import type { Shop } from '@/lib/use-nearby';
 import { avatarFor } from '@/components/AppHeader';
@@ -13,10 +13,12 @@ interface ShopCardProps {
   priority?: boolean;
 }
 
+/** Storefront card: photo with rating + distance, then name, what they rent, area */
 export default function ShopCard({ shop, priority = false }: ShopCardProps) {
   const name = shop.storeName || shop.displayName || 'Local shop';
   const open = getOpenState(shop.storeHours);
   const rated = (shop.reviewCount || 0) > 0;
+  const area = areaName(shop.storeLocation?.address);
 
   return (
     <Link href={`/seller/${shop.uid}`} className="ln-shop" aria-label={`${name}, ${shop.topCategory}, ${formatDistance(shop.distance)} away`}>
@@ -32,31 +34,26 @@ export default function ShopCard({ shop, priority = false }: ShopCardProps) {
               fetchPriority={priority ? 'high' : undefined}
             />
           ) : (
-            <div className="ln-shop-cover-blank" />
+            <Image src={avatarFor(name, shop.avatarUrl)} alt="" fill unoptimized />
           )}
+          <span className="ln-shop-badge is-left">
+            <Star size={12} fill="#facc15" color="#facc15" aria-hidden="true" />
+            {rated ? `${Number(shop.rating).toFixed(1)} (${shop.reviewCount})` : 'New'}
+          </span>
+          <span className="ln-shop-badge is-right">{formatDistance(shop.distance)}</span>
+          <span className="ln-shop-heart" aria-hidden="true"><Heart size={15} /></span>
         </div>
-        <span className="ln-shop-logo">
-          <Image src={avatarFor(name, shop.avatarUrl)} alt="" width={46} height={46} unoptimized />
-        </span>
       </div>
       <div className="ln-shop-body">
         <h3 className="ln-shop-name">
           <span>{name}</span>
-          {shop.isVerified && <BadgeCheck size={16} className="ln-verified" aria-label="Verified seller" />}
+          {shop.isVerified && <BadgeCheck size={16} className="ln-verified" aria-label="Verified shop" />}
         </h3>
         <p className="ln-shop-cat">{shop.topCategory}</p>
-        <p className="ln-shop-meta">
-          {rated ? (
-            <span className="ln-rating"><Star size={12} fill="currentColor" aria-hidden="true" /> {Number(shop.rating).toFixed(1)}</span>
-          ) : (
-            <span>New</span>
-          )}
-          <span aria-hidden="true">·</span>
-          <span>{formatDistance(shop.distance)}</span>
-          <span aria-hidden="true">·</span>
-          <span>{shop.listingCount} item{shop.listingCount === 1 ? '' : 's'}</span>
+        <p className="ln-shop-hours">
+          {area || 'Nearby'}
+          {open && <> · <span className={open.open ? 'is-open' : ''}>{open.label}</span></>}
         </p>
-        {open && <p className={`ln-shop-hours ${open.open ? 'is-open' : ''}`}>{open.label}</p>}
       </div>
     </Link>
   );

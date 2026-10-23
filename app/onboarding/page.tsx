@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { createUserProfile } from '@/lib/firestore';
 import { getCurrentLocation } from '@/lib/location';
-import { uploadImageToCloudinary } from '@/lib/cloudinary';
+import { uploadImage } from '@/lib/upload';
 import { getErrorMessage } from '@/lib/error-utils';
 import toast from 'react-hot-toast';
 import {
@@ -156,7 +156,7 @@ export default function OnboardingPage() {
     try {
       let avatarUrl = avatarPreview || '';
       if (avatarFile) {
-        avatarUrl = await uploadImageToCloudinary(avatarFile, user.uid, 'avatar');
+        avatarUrl = await uploadImage(avatarFile, user.uid, 'avatar');
       }
 
       const cleanPhone = phone.replace(/\D/g, '');
@@ -195,11 +195,11 @@ export default function OnboardingPage() {
     // Step 0: Basic Profile Info
     <div key="basic" className="fade-in">
       <div style={{ marginBottom: 20 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#f97316' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#16a34a' }}>
           Step 1 of 3
         </span>
         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0b2240', letterSpacing: '-0.4px', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
-          <UserCheck size={24} style={{ color: '#f97316', flexShrink: 0 }} />
+          <UserCheck size={24} style={{ color: '#16a34a', flexShrink: 0 }} />
           <span>Welcome to Lendly</span>
         </h2>
         <p style={{ color: '#5c6b8a', fontSize: 13.5, fontWeight: 500, marginTop: 4 }}>
@@ -213,8 +213,8 @@ export default function OnboardingPage() {
           <div style={{
             padding: 3,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #f97316, #0b2240)',
-            boxShadow: '0 8px 20px -4px rgba(249, 115, 22, 0.3)',
+            background: 'linear-gradient(135deg, #16a34a, #0b2240)',
+            boxShadow: '0 8px 20px -4px rgba(22, 163, 74, 0.3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
             {avatarPreview ? (
@@ -233,7 +233,7 @@ export default function OnboardingPage() {
             position: 'absolute', bottom: 2, right: 2,
             width: 32, height: 32, borderRadius: '50%',
             background: '#0b2240', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)', color: '#f97316', border: '2px solid #ffffff'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)', color: '#16a34a', border: '2px solid #ffffff'
           }}>
             <Camera size={15} />
           </div>
@@ -317,11 +317,11 @@ export default function OnboardingPage() {
     // Step 1: Location Setup
     <div key="location" className="fade-in">
       <div style={{ marginBottom: 20 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#f97316' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#16a34a' }}>
           Step 2 of 3
         </span>
         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0b2240', letterSpacing: '-0.4px', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
-          <MapPin size={24} style={{ color: '#f97316', flexShrink: 0 }} />
+          <MapPin size={24} style={{ color: '#16a34a', flexShrink: 0 }} />
           <span>Your Location</span>
         </h2>
         <p style={{ color: '#5c6b8a', fontSize: 13.5, fontWeight: 500, marginTop: 4 }}>
@@ -335,7 +335,7 @@ export default function OnboardingPage() {
         style={{
           width: '100%', marginBottom: 16, padding: 14, borderRadius: 16,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          fontSize: 14, fontWeight: 700, boxShadow: '0 4px 14px rgba(249, 115, 22, 0.25)',
+          fontSize: 14, fontWeight: 700, boxShadow: '0 4px 14px rgba(22, 163, 74, 0.25)',
           cursor: 'pointer'
         }}
         disabled={locLoading}
@@ -382,11 +382,11 @@ export default function OnboardingPage() {
     // Step 2: Seller Setup & Account Type Choice
     <div key="seller" className="fade-in">
       <div style={{ marginBottom: 20 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#f97316' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: '#16a34a' }}>
           Step 3 of 3
         </span>
         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0b2240', letterSpacing: '-0.4px', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
-          <Store size={24} style={{ color: '#f97316', flexShrink: 0 }} />
+          <Store size={24} style={{ color: '#16a34a', flexShrink: 0 }} />
           <span>Sell on Lendly?</span>
         </h2>
         <p style={{ color: '#5c6b8a', fontSize: 13.5, fontWeight: 500, marginTop: 4 }}>
@@ -400,9 +400,9 @@ export default function OnboardingPage() {
           onClick={() => setWantsSeller(false)}
           style={{
             padding: '16px 18px', borderRadius: 16, cursor: 'pointer',
-            border: !wantsSeller ? '2px solid #f97316' : '1px solid #e2e8f0',
-            background: !wantsSeller ? 'rgba(249, 115, 22, 0.05)' : '#ffffff',
-            boxShadow: !wantsSeller ? '0 4px 14px rgba(249, 115, 22, 0.12)' : 'none',
+            border: !wantsSeller ? '2px solid #16a34a' : '1px solid #e2e8f0',
+            background: !wantsSeller ? 'rgba(22, 163, 74, 0.05)' : '#ffffff',
+            boxShadow: !wantsSeller ? '0 4px 14px rgba(22, 163, 74, 0.12)' : 'none',
             display: 'flex', alignItems: 'center', gap: 14,
             transition: 'all 0.2s ease'
           }}
@@ -410,7 +410,7 @@ export default function OnboardingPage() {
           <div style={{
             width: 42, height: 42, borderRadius: 12,
             background: !wantsSeller ? '#0b2240' : '#f1f5f9',
-            color: !wantsSeller ? '#f97316' : '#64748b',
+            color: !wantsSeller ? '#16a34a' : '#64748b',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
           }}>
             <ShoppingBag size={20} />
@@ -423,8 +423,8 @@ export default function OnboardingPage() {
           </div>
           <div style={{
             width: 22, height: 22, borderRadius: '50%',
-            border: !wantsSeller ? '2px solid #f97316' : '2px solid #cbd5e1',
-            background: !wantsSeller ? '#f97316' : 'transparent',
+            border: !wantsSeller ? '2px solid #16a34a' : '2px solid #cbd5e1',
+            background: !wantsSeller ? '#16a34a' : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff'
           }}>
             {!wantsSeller && <Check size={14} strokeWidth={3} />}
@@ -435,16 +435,16 @@ export default function OnboardingPage() {
           onClick={() => setWantsSeller(true)}
           style={{
             padding: '16px 18px', borderRadius: 16, cursor: 'pointer',
-            border: wantsSeller ? '2px solid #f97316' : '1px solid #e2e8f0',
-            background: wantsSeller ? 'rgba(249, 115, 22, 0.05)' : '#ffffff',
-            boxShadow: wantsSeller ? '0 4px 14px rgba(249, 115, 22, 0.12)' : 'none',
+            border: wantsSeller ? '2px solid #16a34a' : '1px solid #e2e8f0',
+            background: wantsSeller ? 'rgba(22, 163, 74, 0.05)' : '#ffffff',
+            boxShadow: wantsSeller ? '0 4px 14px rgba(22, 163, 74, 0.12)' : 'none',
             display: 'flex', alignItems: 'center', gap: 14,
             transition: 'all 0.2s ease'
           }}
         >
           <div style={{
             width: 42, height: 42, borderRadius: 12,
-            background: wantsSeller ? '#f97316' : '#f1f5f9',
+            background: wantsSeller ? '#16a34a' : '#f1f5f9',
             color: wantsSeller ? '#ffffff' : '#64748b',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
           }}>
@@ -458,8 +458,8 @@ export default function OnboardingPage() {
           </div>
           <div style={{
             width: 22, height: 22, borderRadius: '50%',
-            border: wantsSeller ? '2px solid #f97316' : '2px solid #cbd5e1',
-            background: wantsSeller ? '#f97316' : 'transparent',
+            border: wantsSeller ? '2px solid #16a34a' : '2px solid #cbd5e1',
+            background: wantsSeller ? '#16a34a' : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff'
           }}>
             {wantsSeller && <Check size={14} strokeWidth={3} />}
@@ -516,7 +516,7 @@ export default function OnboardingPage() {
       <div style={{
         position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 400,
-        background: 'radial-gradient(circle, rgba(249,115,22,0.12) 0%, rgba(99,102,241,0.06) 50%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(22, 163, 74,0.12) 0%, rgba(99,102,241,0.06) 50%, transparent 70%)',
         filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0
       }} />
 
@@ -528,7 +528,7 @@ export default function OnboardingPage() {
         background: 'rgba(255, 255, 255, 0.96)',
         backdropFilter: 'blur(16px)',
         border: '1px solid rgba(226, 232, 240, 0.9)',
-        boxShadow: '0 20px 45px -15px rgba(11, 34, 64, 0.09), 0 0 0 1px rgba(249, 115, 22, 0.08)',
+        boxShadow: '0 20px 45px -15px rgba(11, 34, 64, 0.09), 0 0 0 1px rgba(22, 163, 74, 0.08)',
         position: 'relative',
         zIndex: 1
       }}>
@@ -539,9 +539,9 @@ export default function OnboardingPage() {
               <div key={i} style={{
                 flex: 1, height: 6, borderRadius: 999,
                 background: i <= step
-                  ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
+                  ? 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)'
                   : '#e2e8f0',
-                boxShadow: i <= step ? '0 2px 6px rgba(249, 115, 22, 0.3)' : 'none',
+                boxShadow: i <= step ? '0 2px 6px rgba(22, 163, 74, 0.3)' : 'none',
                 transition: 'all 0.3s ease',
               }} />
             ))}
@@ -581,7 +581,7 @@ export default function OnboardingPage() {
             style={{
               flex: 1, padding: '14px 20px', borderRadius: 14, fontSize: 14.5, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: '0 4px 14px rgba(249, 115, 22, 0.3)', cursor: 'pointer'
+              boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)', cursor: 'pointer'
             }}
             disabled={loading}
           >

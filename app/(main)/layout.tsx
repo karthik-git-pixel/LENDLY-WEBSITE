@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { Home, Compass, Plus, MessageCircle, User } from 'lucide-react';
+import { Home, Search, Plus, CalendarCheck, User } from 'lucide-react';
 import Link from 'next/link';
 import AppHeader from '@/components/AppHeader';
 import AnnouncementBar from '@/components/AnnouncementBar';
@@ -29,10 +29,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const isAuthenticated = !!user && !!profile;
 
   const tabs = [
-    { href: '/home', label: t('home'), icon: Home, match: ['/home', '/search', '/shops', '/plan'] },
-    { href: '/explore', label: t('explore'), icon: Compass, match: ['/explore'] },
+    { href: '/home', label: t('home'), icon: Home, match: ['/home', '/plan'] },
+    { href: '/search', label: 'Search', icon: Search, match: ['/search', '/shops', '/explore'] },
     { href: '/sell/new', label: 'List', icon: Plus, match: ['/sell'] },
-    { href: '/chat', label: t('chat'), icon: MessageCircle, match: ['/chat'] },
+    { href: '/profile/orders', label: 'Bookings', icon: CalendarCheck, match: ['/profile/orders', '/qr', '/scan'] },
     { href: '/profile', label: t('profile'), icon: User, match: ['/profile'] },
   ];
 
@@ -80,7 +80,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       {/* Mobile Floating Bottom Navigation Bar (Hidden on Desktop) */}
       {showTabBar && <nav className="bottom-nav mobile-only" aria-label="Primary">
         {tabs.map(({ href, label, icon: Icon, match }) => {
-          const isActive = match.some(m => pathname === m || pathname.startsWith(m + '/'));
+          const isActive = href === '/profile'
+            ? pathname === '/profile' || (pathname.startsWith('/profile/') && !pathname.startsWith('/profile/orders'))
+            : match.some(m => pathname === m || pathname.startsWith(m + '/'));
           const isList = href === '/sell/new';
 
           if (isList) {

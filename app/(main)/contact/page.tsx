@@ -46,7 +46,7 @@ export default function ContactPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                <div style={{ background: 'rgba(249, 115, 22, 0.15)', padding: 10, borderRadius: 12, color: 'var(--primary)' }}>
+                <div style={{ background: 'rgba(22, 163, 74, 0.15)', padding: 10, borderRadius: 12, color: 'var(--primary)' }}>
                   <Mail size={20} />
                 </div>
                 <div>
