@@ -5401,74 +5401,186 @@ select.ln-input { cursor: pointer; }
 /* Hero: copy left, the Lendly bag right */
 .ln-hero {
   position: relative;
-  margin-top: 22px;
+  margin-top: 20px;
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.25fr);
   align-items: center;
-  min-height: 176px;
-  border-radius: 22px;
+  min-height: 200px;
+  border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(120deg, #dcfce7 0%, #ecfdf3 55%, #f0fdf4 100%);
-  border: 1px solid #bbf7d0;
+  background: linear-gradient(135deg, #e7f8ef 0%, #def5e8 50%, #d5f1e1 100%);
+  border: 1px solid rgba(167, 243, 208, 0.55);
+  box-shadow: 0 4px 20px -2px rgba(6, 78, 59, 0.05);
+}
+
+.ln-hero-badge {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 252, 231, 0.9);
+  box-shadow: 0 6px 18px -2px rgba(6, 78, 59, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.ln-hero-badge-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  flex-shrink: 0;
+}
+
+.ln-hero-badge-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ln-hero-badge-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #064e3b;
+  line-height: 1.2;
+}
+
+.ln-hero-badge-sub {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #4b7a63;
+  line-height: 1.2;
 }
 
 .ln-hero-copy {
-  padding: 20px 4px 20px 20px;
+  padding: 24px 8px 24px 24px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .ln-hero-copy h2 {
   font-family: var(--font-display);
-  font-size: 24px;
-  line-height: 1.12;
+  font-size: 26px;
+  line-height: 1.14;
   font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #14532d;
+  letter-spacing: -0.03em;
+  color: #064e3b;
 }
 
-.ln-hero-copy h2 span { color: var(--primary); }
+.ln-hero-copy h2 span {
+  color: #064e3b;
+}
 
 .ln-hero-copy p {
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 13.5px;
+  line-height: 1.4;
   font-weight: 500;
-  color: #166534;
+  color: #1b5e3a;
 }
 
 .ln-hero-cta {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
-  margin-top: 14px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: var(--primary);
+  justify-content: center;
+  min-height: 38px;
+  margin-top: 16px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background: #065f46;
   color: #ffffff;
-  font: 700 13px var(--font-sans);
+  font: 600 13px var(--font-sans);
   text-decoration: none;
+  box-shadow: 0 4px 12px rgba(6, 95, 70, 0.22);
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
-.ln-hero-cta:hover { background: var(--primary-dark); }
+.ln-hero-cta:hover {
+  background: #044e39;
+  transform: translateY(-1px);
+}
 
 .ln-hero-art {
   position: relative;
   align-self: stretch;
-  min-height: 176px;
+  min-height: 190px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .ln-hero-art img {
-  object-fit: cover;
-  object-position: 45% 60%;
-  mix-blend-mode: multiply;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 10px 18px rgba(6, 78, 59, 0.14));
+  transform: scale(1.08) translateY(2px);
+  transform-origin: center bottom;
+  z-index: 2;
+}
+
+.ln-hero-ground-shadow {
+  position: absolute;
+  bottom: 4px;
+  left: 10%;
+  width: 80%;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(6, 78, 59, 0.22) 0%, rgba(6, 78, 59, 0.06) 50%, transparent 75%);
+  filter: blur(4px);
+  pointer-events: none;
+  z-index: 1;
 }
 
 @media (min-width: 768px) {
-  .ln-hero { min-height: 230px; grid-template-columns: minmax(0, 1fr) 300px; }
-  .ln-hero-copy { padding: 32px 8px 32px 40px; }
-  .ln-hero-copy h2 { font-size: 40px; }
-  .ln-hero-copy p { font-size: 16px; }
-  .ln-hero-art { min-height: 230px; }
+  .ln-hero {
+    min-height: 270px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+    border-radius: 28px;
+  }
+  .ln-hero-badge {
+    top: 20px;
+    right: 28px;
+    padding: 8px 16px 8px 10px;
+    border-radius: 14px;
+  }
+  .ln-hero-badge-title {
+    font-size: 13px;
+  }
+  .ln-hero-badge-sub {
+    font-size: 10.5px;
+  }
+  .ln-hero-copy {
+    padding: 36px 12px 36px 44px;
+  }
+  .ln-hero-copy h2 {
+    font-size: 42px;
+    line-height: 1.1;
+  }
+  .ln-hero-copy p {
+    font-size: 16px;
+    margin-top: 12px;
+  }
+  .ln-hero-cta {
+    min-height: 44px;
+    padding: 0 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-top: 20px;
+  }
+  .ln-hero-art {
+    min-height: 270px;
+  }
+  .ln-hero-art img {
+    transform: scale(1.15) translateY(4px);
+  }
 }
 
 /* Shop cards: rating + distance over the photo */
