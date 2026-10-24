@@ -90,6 +90,7 @@ export interface OrderParty {
   displayName: string;
   storeName?: string;
   avatarUrl: string;
+  storeLocation?: GeoPoint;
 }
 
 export interface Order {
@@ -327,6 +328,7 @@ interface PartyRow {
   display_name?: string | null;
   store_name?: string | null;
   avatar_url?: string | null;
+  store_location?: unknown;
 }
 
 interface OrderRow {
@@ -502,7 +504,12 @@ function mapProduct(row: ProductRow): Product {
 
 function mapParty(row: PartyRow | null | undefined): OrderParty | undefined {
   if (!row) return undefined;
-  return { displayName: row.display_name || '', storeName: row.store_name || '', avatarUrl: row.avatar_url || '' };
+  return {
+    displayName: row.display_name || '',
+    storeName: row.store_name || '',
+    avatarUrl: row.avatar_url || '',
+    storeLocation: row.store_location ? toPoint(row.store_location) : undefined,
+  };
 }
 
 function mapOrder(row: OrderRow): Order {
@@ -942,7 +949,7 @@ export async function getHandoverCode(orderId: string): Promise<string | null> {
   return data.handover_code;
 }
 
-const ORDER_SELECT = '*, buyer:profiles!orders_buyer_id_fkey(display_name,avatar_url), seller:profiles!orders_seller_id_fkey(display_name,store_name,avatar_url)';
+const ORDER_SELECT = '*, buyer:profiles!orders_buyer_id_fkey(display_name,avatar_url), seller:profiles!orders_seller_id_fkey(display_name,store_name,avatar_url,store_location)';
 
 export async function getOrder(id: string): Promise<Order | null> {
   const { data, error } = await supabase.from('orders').select(ORDER_SELECT).eq('id', id).maybeSingle();
