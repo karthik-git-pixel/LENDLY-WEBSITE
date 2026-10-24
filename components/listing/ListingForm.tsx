@@ -4,18 +4,19 @@ import { useMemo, useState } from 'react';
 import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ImagePlus, Info, Loader2, Star, X } from 'lucide-react';
+import { ImagePlus, Loader2, Sparkles, Star, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth-context';
 import { useUserLocation } from '@/lib/location-context';
 import { createProduct, deleteProduct, hasPoint, updateProduct, type GeoPoint, type Product } from '@/lib/supabase-db';
-import { uploadImage } from '@/lib/upload';
+import { compressImage, uploadImage } from '@/lib/upload';
+import { authFetch } from '@/lib/auth-fetch';
 import {
   CATEGORIES, RENT_UNITS, SALE_CONDITIONS, SUBCATEGORY_SPEC, fitsShopLabel, rentFeatureOptions, shopMainCategory,
   type ListingType, type RentUnit,
 } from '@/lib/catalog';
-import { draftFromSnap, inr, whyThisPrice, type AiField } from '@/lib/ai/snap-draft';
-import type { SnapResult } from '@/lib/ai/snap-types';
+import { draftFromSnap, withSpecs } from '@/lib/ai/snap-draft';
+import type { SnapResponse, SnapResult } from '@/lib/ai/snap-types';
 import LocationPicker, { hasAddressDetails } from './LocationPicker';
 
 const MAX_PHOTOS = 8;
@@ -33,46 +34,41 @@ interface ListingFormProps {
   initial?: Product;
   /** A listing to copy into a new one */
   template?: Product;
-  /** A photo picked before the form opened; it becomes the cover */
-  photo?: File;
-  /** Snap-to-List's draft of this listing, for the owner to check */
-  snap?: SnapResult;
 }
 
-/** Marks a field Snap-to-List filled in; it goes away once the owner edits it */
-const AiTag = ({ on }: { on: boolean }) => (on ? <em className="lf-ai-tag">✨ AI</em> : null);
-
-export default function ListingForm({ kind, initial, template, photo, snap }: ListingFormProps) {
+export default function ListingForm({ kind, initial, template }: ListingFormProps) {
   const router = useRouter();
   const { profile } = useAuth();
   const { coords, address } = useUserLocation();
   const rent = kind === 'rent';
   const editing = Boolean(initial);
   const source = initial || template;
-  const [draft] = useState(() => (snap ? draftFromSnap(snap) : null));
 
   // New rentals start in the shop's own category, on its first speciality
-  const startCategory = draft?.category || source?.category || shopMainCategory(profile?.storeCategory)?.name || (rent ? 'Event & Sound' : 'Electronics');
-  const startSub = draft ? draft.subcategory : source ? source.subcategory || '' : (profile?.storeCategory || '').split(',').map(s => s.trim())
+  const startCategory = source?.category || shopMainCategory(profile?.storeCategory)?.name || (rent ? 'Event & Sound' : 'Electronics');
+  const startSub = source ? source.subcategory || '' : (profile?.storeCategory || '').split(',').map(s => s.trim())
     .find(s => CATEGORIES.find(c => c.name === startCategory)?.subcategories.includes(s)) || '';
-  const [title, setTitle] = useState(draft?.title || source?.title || '');
-  const [description, setDescription] = useState(draft?.description || source?.description || '');
+  const [title, setTitle] = useState(source?.title || '');
+  const [description, setDescription] = useState(source?.description || '');
   const [category, setCategory] = useState(startCategory);
   const [subcategory, setSubcategory] = useState(startSub);
-  const [price, setPrice] = useState(draft ? draft.price : source ? String(source.price) : '');
+  const [price, setPrice] = useState(source ? String(source.price) : '');
   const [originalPrice, setOriginalPrice] = useState(source?.originalPrice ? String(source.originalPrice) : '');
   const [condition, setCondition] = useState(source?.condition || 'Good');
   const [unit, setUnit] = useState<RentUnit>((source?.rentDuration as RentUnit) || 'day');
-  const [deposit, setDeposit] = useState(draft ? draft.deposit : source?.securityDeposit ? String(source.securityDeposit) : '');
+  const [deposit, setDeposit] = useState(source?.securityDeposit ? String(source.securityDeposit) : '');
   const [minUnits, setMinUnits] = useState(String(source?.minUnits || 1));
   const [maxUnits, setMaxUnits] = useState(source?.maxUnits ? String(source.maxUnits) : '');
   const [capacity, setCapacity] = useState(source?.capacity ? String(source.capacity) : '');
-  const [features, setFeatures] = useState<string[]>(draft?.features || source?.features || []);
-  const [spec, setSpec] = useState(() => draft?.spec || Object.values(source?.attributes || {})[0] || '');
-  const [photos, setPhotos] = useState<Photo[]>(() => [
-    ...(photo ? [{ key: `${photo.name}-${photo.lastModified}`, src: URL.createObjectURL(photo), file: photo }] : []),
-    ...(source?.images || []).map((src, i) => ({ key: `${i}-${src}`, src })),
-  ]);
+  const [features, setFeatures] = useState<string[]>(source?.features || []);
+  const [spec, setSpec] = useState(() => {
+    const attrs = source?.attributes || {};
+    const key = SUBCATEGORY_SPEC[startSub]?.key;
+    return (key && attrs[key]) || Object.entries(attrs).find(([k]) => k !== 'model')?.[1] || '';
+  });
+  const [modelName, setModelName] = useState(source?.attributes?.model || '');
+  const [aiBusy, setAiBusy] = useState<'photo' | 'model' | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>(() => (source?.images || []).map((src, i) => ({ key: `${i}-${src}`, src })));
   const [place, setPlace] = useState<GeoPoint | null>(
     source && hasPoint(source.location) ? source.location
       : profile?.storeLocation && hasPoint(profile.storeLocation) ? profile.storeLocation
@@ -81,16 +77,6 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
   const [active, setActive] = useState(initial ? initial.status !== 'paused' : true);
   const [saving, setSaving] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [aiFields, setAiFields] = useState<Set<AiField>>(() => draft?.fields || new Set());
-  const [showWhy, setShowWhy] = useState(false);
-  const ai = (field: AiField) => aiFields.has(field);
-  const edited = (...fields: AiField[]) => setAiFields(prev => {
-    if (!fields.some(f => prev.has(f))) return prev;
-    const next = new Set(prev);
-    fields.forEach(f => next.delete(f));
-    return next;
-  });
-  const blocked = snap && !snap.is_allowed ? snap.rejection_reason || 'This item can’t be listed on Lendly.' : null;
 
   const subs = useMemo(() => CATEGORIES.find(c => c.name === category)?.subcategories || [], [category]);
   const specField = SUBCATEGORY_SPEC[subcategory];
@@ -113,6 +99,50 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
     if (picked.length) setPhotos(prev => [...prev, ...picked]);
   };
 
+  /** Asks the AI to draft the listing from the cover photo, or the specs from the model name */
+  const autoFill = async (mode: 'photo' | 'model') => {
+    if (mode === 'model' && modelName.trim().length < 2) return toast.error('Type the brand and model first');
+    setAiBusy(mode);
+    try {
+      let res: Response;
+      if (mode === 'photo') {
+        const cover = photos[0];
+        const file = cover.file || new File([await (await fetch(cover.src)).blob()], 'cover.jpg', { type: 'image/jpeg' });
+        // A small JPEG is all the model needs, and keeps the call quick and cheap
+        const small = await compressImage(file, { maxWidth: 1024, maxHeight: 1024, quality: 0.8, type: 'image/jpeg' });
+        const body = new FormData();
+        body.append('image', small);
+        res = await authFetch('/api/ai/snap-to-list', { method: 'POST', body });
+      } else {
+        res = await authFetch('/api/ai/snap-to-list', { method: 'POST', body: JSON.stringify({ model: modelName.trim() }) });
+      }
+      const data = await res.json().catch(() => ({ fallback: true })) as SnapResponse;
+      if (data.fallback) throw new Error(data.error || 'AI couldn’t fill this in');
+      apply(data.result, mode);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'AI couldn’t fill this in');
+    } finally {
+      setAiBusy(null);
+    }
+  };
+
+  const apply = (r: SnapResult, mode: 'photo' | 'model') => {
+    if (!r.is_allowed) return toast.error(r.rejection_reason || 'This item can’t be listed on Lendly.');
+    if (mode === 'model' && !r.specs.length) return toast.error('Couldn’t find specs for that model — check the spelling');
+    const d = draftFromSnap(r, mode === 'photo');
+    // A photo drafts the whole listing; a model name adds specs to what is already there
+    if (mode === 'photo' || !title.trim()) setTitle(d.title);
+    if (mode === 'photo' || !subcategory) { setCategory(d.category); setSubcategory(d.subcategory); }
+    setDescription(prev => (mode === 'photo' || !prev.trim() ? d.description : withSpecs(prev, r.specs)));
+    if (d.model && (mode === 'photo' ? !modelName.trim() : true)) setModelName(d.model);
+    if (d.spec) setSpec(d.spec);
+    if (d.features.length) setFeatures(prev => [...new Set([...prev, ...d.features])]);
+    if (!price && d.price) setPrice(d.price);
+    if (!deposit && d.deposit) setDeposit(d.deposit);
+    toast.success(mode === 'photo' ? 'Filled in from your photo — check and edit anything' : 'Specs added — check and edit anything');
+    if (r.confidence < 0.5) toast('AI wasn’t fully sure — please double-check the details');
+  };
+
   const removePhoto = (key: string) => setPhotos(prev => prev.filter(p => p.key !== key));
 
   const makeCover = (key: string) => setPhotos(prev => {
@@ -123,7 +153,6 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return toast.error('Please log in again');
-    if (blocked) return toast.error(blocked);
     if (!title.trim()) return toast.error('Add a title');
     if (!(Number(price) > 0)) return toast.error(rent ? 'Set your rental price' : 'Set your price');
     if (photos.length === 0) return toast.error('Add at least one photo');
@@ -162,7 +191,10 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
               maxUnits: maxUnits ? Math.max(Number(minUnits) || 1, Number(maxUnits)) : null,
               capacity: isVenue && Number(capacity) > 0 ? Number(capacity) : null,
               features,
-              attributes: specField && spec.trim() ? { [specField.key]: spec.trim() } : {},
+              attributes: {
+                ...(specField && spec.trim() ? { [specField.key]: spec.trim() } : {}),
+                ...(modelName.trim() ? { model: modelName.trim() } : {}),
+              },
               condition: '',
             }
           : {
@@ -209,16 +241,6 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
 
   return (
     <form className="lf" onSubmit={submit}>
-      {snap && (
-        blocked ? (
-          <p className="ln-note lf-ai-block" role="alert"><strong>We can&apos;t list this item.</strong> {blocked}</p>
-        ) : (
-          <p className="ln-note lf-ai-note">
-            ✨ We filled this in from your photo. Check every detail — nothing goes live until you publish.
-            {snap.confidence < 0.6 && <><br /><strong>Not fully sure — please check the details.</strong></>}
-          </p>
-        )
-      )}
       <section className="lf-section">
         <h2>Photos</h2>
         <p className="ln-note" style={{ marginTop: 4 }}>Up to {MAX_PHOTOS}. The first photo is the cover — tap the star on another to swap.</p>
@@ -249,37 +271,54 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
             </label>
           )}
         </div>
+        {rent && photos.length > 0 && (
+          <button type="button" className="ln-btn ln-btn-ghost ln-btn-sm lf-ai-btn" disabled={Boolean(aiBusy)} onClick={() => autoFill('photo')}>
+            {aiBusy === 'photo' ? <><Loader2 size={16} className="ln-spin" /> Reading your photo…</> : <><Sparkles size={16} aria-hidden="true" /> Auto-fill details from photo</>}
+          </button>
+        )}
       </section>
 
       <section className="lf-section">
         <h2>Details</h2>
-        <label className="pd-field"><span>Title <AiTag on={ai('title')} /></span>
-          <input className="ln-input" value={title} maxLength={90} onChange={e => { setTitle(e.target.value); edited('title'); }}
+        <label className="pd-field"><span>Title</span>
+          <input className="ln-input" value={title} maxLength={90} onChange={e => setTitle(e.target.value)}
             placeholder={rent ? 'e.g. JBL PA speaker set with mixer' : 'e.g. iPhone 12, 128 GB'} required />
         </label>
         <div className="pd-field-row">
-          <label className="pd-field"><span>Category <AiTag on={ai('category')} /></span>
-            <select className="ln-input" value={category} onChange={e => { setCategory(e.target.value); setSubcategory(''); edited('category', 'subcategory'); }}>
+          <label className="pd-field"><span>Category</span>
+            <select className="ln-input" value={category} onChange={e => { setCategory(e.target.value); setSubcategory(''); }}>
               {CATEGORIES.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
           </label>
           {subs.length > 0 && (
-            <label className="pd-field"><span>Type <AiTag on={ai('subcategory')} /></span>
-              <select className="ln-input" value={subcategory} onChange={e => { setSubcategory(e.target.value); edited('subcategory'); }}>
+            <label className="pd-field"><span>Type</span>
+              <select className="ln-input" value={subcategory} onChange={e => setSubcategory(e.target.value)}>
                 <option value="">Choose…</option>
                 {subs.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
           )}
         </div>
+        {rent && (
+          <div className="pd-field"><span>Brand &amp; model</span>
+            <div className="lf-ai-row">
+              <input className="ln-input" value={modelName} maxLength={100} onChange={e => setModelName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void autoFill('model'); } }}
+                placeholder="e.g. JBL PartyBox 310" aria-label="Brand and model" />
+              <button type="button" className="ln-btn ln-btn-ghost ln-btn-sm lf-ai-btn" disabled={Boolean(aiBusy)} onClick={() => autoFill('model')}>
+                {aiBusy === 'model' ? <Loader2 size={16} className="ln-spin" /> : <Sparkles size={16} aria-hidden="true" />} Fill specs
+              </button>
+            </div>
+          </div>
+        )}
         {offGenre && (
           <p className="ln-note ln-note-warn">
             Your shop is listed for <strong>{storeLabel}</strong>, so this may not show on your shop page.{' '}
             <Link href="/sell/shop" className="ln-text-btn">Update your shop specialities</Link>
           </p>
         )}
-        <label className="pd-field"><span>Description <AiTag on={ai('description')} /></span>
-          <textarea className="ln-input" rows={snap ? 6 : 4} maxLength={2000} value={description} onChange={e => { setDescription(e.target.value); edited('description'); }}
+        <label className="pd-field"><span>Description</span>
+          <textarea className="ln-input" rows={description.includes('Specifications:') ? 9 : 4} maxLength={2000} value={description} onChange={e => setDescription(e.target.value)}
             placeholder={rent ? 'What is included, how it is delivered, any rules…' : 'Condition, age, what comes with it…'} />
         </label>
       </section>
@@ -288,33 +327,9 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
         <h2>{rent ? 'Rental price & terms' : 'Price'}</h2>
         {rent ? (
           <>
-            {snap && snap.suggested_rent_per_day_inr > 0 && (
-              <div className="lf-ai-prices">
-                <span className="lf-ai-prices-label">✨ Suggested</span>
-                <div className="ln-chip-wrap">
-                  <button type="button" className="ln-chip" aria-pressed={price === String(snap.suggested_rent_per_day_inr) && unit === 'day'}
-                    onClick={() => { setPrice(String(snap.suggested_rent_per_day_inr)); setUnit('day'); }}>
-                    {inr(snap.suggested_rent_per_day_inr)}/day
-                  </button>
-                  {snap.suggested_deposit_inr > 0 && (
-                    <button type="button" className="ln-chip" aria-pressed={deposit === String(snap.suggested_deposit_inr)}
-                      onClick={() => setDeposit(String(snap.suggested_deposit_inr))}>
-                      {inr(snap.suggested_deposit_inr)} deposit
-                    </button>
-                  )}
-                  {snap.estimated_replacement_value_inr > 0 && (
-                    <span className="ln-chip lf-ai-value">~{inr(snap.estimated_replacement_value_inr)} to replace</span>
-                  )}
-                </div>
-                <button type="button" className="ln-text-btn" aria-expanded={showWhy} title={whyThisPrice(snap)} onClick={() => setShowWhy(v => !v)}>
-                  <Info size={14} aria-hidden="true" /> Why this price?
-                </button>
-                {showWhy && <p className="ln-note" style={{ margin: 0 }}>{whyThisPrice(snap)}</p>}
-              </div>
-            )}
             <div className="pd-field-row">
-              <label className="pd-field"><span>Price (₹) <AiTag on={ai('price')} /></span>
-                <input className="ln-input" type="number" inputMode="numeric" min={1} value={price} onChange={e => { setPrice(e.target.value); edited('price'); }} placeholder="500" required />
+              <label className="pd-field"><span>Price (₹)</span>
+                <input className="ln-input" type="number" inputMode="numeric" min={1} value={price} onChange={e => setPrice(e.target.value)} placeholder="500" required />
               </label>
               <label className="pd-field"><span>Per</span>
                 <select className="ln-input" value={unit} onChange={e => setUnit(e.target.value as RentUnit)}>
@@ -323,8 +338,8 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
               </label>
             </div>
             <div className="pd-field-row">
-              <label className="pd-field"><span>Refundable deposit (₹) <AiTag on={ai('deposit')} /></span>
-                <input className="ln-input" type="number" inputMode="numeric" min={0} value={deposit} onChange={e => { setDeposit(e.target.value); edited('deposit'); }} placeholder="0" />
+              <label className="pd-field"><span>Refundable deposit (₹)</span>
+                <input className="ln-input" type="number" inputMode="numeric" min={0} value={deposit} onChange={e => setDeposit(e.target.value)} placeholder="0" />
               </label>
               {isVenue && (
                 <label className="pd-field"><span>Guests it holds</span>
@@ -341,15 +356,15 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
               </label>
             </div>
             {specField && (
-              <label className="pd-field"><span>{specField.label} <AiTag on={ai('spec')} /></span>
-                <input className="ln-input" value={spec} onChange={e => { setSpec(e.target.value); edited('spec'); }} placeholder={specField.placeholder} />
+              <label className="pd-field"><span>{specField.label}</span>
+                <input className="ln-input" value={spec} onChange={e => setSpec(e.target.value)} placeholder={specField.placeholder} />
               </label>
             )}
-            <div className="pd-field"><span>What&apos;s included <AiTag on={ai('features')} /></span>
+            <div className="pd-field"><span>What&apos;s included</span>
               <div className="ln-chip-wrap">
                 {featureOptions.map(f => (
                   <button key={f} type="button" className="ln-chip" aria-pressed={features.includes(f)}
-                    onClick={() => { setFeatures(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]); edited('features'); }}>{f}</button>
+                    onClick={() => setFeatures(prev => prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f])}>{f}</button>
                 ))}
               </div>
             </div>
@@ -393,7 +408,7 @@ export default function ListingForm({ kind, initial, template, photo, snap }: Li
 
       <div className="lf-submit">
         {editing && <button type="button" className="ln-btn ln-btn-danger" onClick={remove} disabled={Boolean(saving)}>Delete</button>}
-        <button type="submit" className="ln-btn ln-btn-primary" style={{ flex: 1 }} disabled={Boolean(saving) || Boolean(blocked)}>
+        <button type="submit" className="ln-btn ln-btn-primary" style={{ flex: 1 }} disabled={Boolean(saving)}>
           {saving ? <><Loader2 size={18} className="ln-spin" /> {saving}</> : editing ? 'Save changes' : rent ? 'Publish rental' : 'Publish listing'}
         </button>
       </div>

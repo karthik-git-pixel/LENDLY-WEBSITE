@@ -4,18 +4,17 @@ import { CATEGORIES } from '@/lib/catalog';
 import type { SnapResult } from './snap-types';
 
 /**
- * Snap-to-List: one photo in, a filled-in rental listing out. Server only —
- * the OpenAI key never reaches the browser.
+ * AI listing drafts: a photo, or a brand & model name, in; a filled-in rental
+ * listing out. Server only — the OpenAI key never reaches the browser.
  */
 
 const MODEL = process.env.OPENAI_SNAP_MODEL || 'gpt-6-luna';
 const CATEGORY_NAMES = CATEGORIES.map(c => c.name);
 
-const SYSTEM_PROMPT = `You are the listing helper for Lendly, a hyperlocal rental marketplace in India. A lender has photographed one item they want to rent out to neighbours; fill in the listing from the photo.
+const BASE_PROMPT = `You are the listing helper for Lendly, a hyperlocal rental marketplace in India. Fill in a rental listing for one item a lender wants to rent out to neighbours.
 
 Rules:
 - Prices are in INR and realistic for Kerala. Rent per day is what a local rental shop or neighbour would charge, not a share of the purchase price.
-- Describe only what is visible. Never invent specs, model numbers or accessories you cannot see — use null for brand/model and leave arrays empty when unsure.
 - title: short and searchable, max 60 characters, brand + item type when visible.
 - description: 2–3 short plain sentences, no hype, no emojis.
 - category must be one of the given values; subcategory should be one of that category's listed types, or "" if none fit.
@@ -25,6 +24,14 @@ Rules:
 
 Categories and their types:
 ${CATEGORIES.map(c => `- ${c.name}: ${c.subcategories.join(', ') || '(none)'}`).join('\n')}`;
+
+const PHOTO_PROMPT = `${BASE_PROMPT}
+
+You get a photo. Describe only what is visible. Never invent model numbers or accessories you cannot see — use null for brand/model and leave arrays empty when unsure. Fill specs only with what is printed or clearly identifiable.`;
+
+const MODEL_PROMPT = `${BASE_PROMPT}
+
+You get the item's brand and model name, typed by the lender. Use your knowledge of that exact product's official specifications: fill specs with up to 8 of the most useful ones for a renter (e.g. power, battery, resolution, capacity, weight, connectivity), with units. included_items is what comes in the box. condition is "good" and visible_defects is empty — you have not seen the item. If you don't recognise the model, return empty specs and confidence below 0.3; never make specs up.`;
 
 const nullableString = { type: ['string', 'null'] };
 const stringList = { type: 'array', items: { type: 'string' } };
@@ -49,7 +56,7 @@ const SCHEMA = {
     included_items: { ...stringList, description: 'Accessories visible in the photo' },
     specs: {
       type: 'array',
-      maxItems: 6,
+      maxItems: 8,
       items: {
         type: 'object',
         additionalProperties: false,
@@ -121,7 +128,7 @@ function tidy(raw: SnapResult): SnapResult {
     specs: (Array.isArray(raw.specs) ? raw.specs : [])
       .map(s => ({ key: text(s?.key, 30), value: text(s?.value, 60) }))
       .filter(s => s.key && s.value)
-      .slice(0, 6),
+      .slice(0, 8),
     estimated_replacement_value_inr: money(raw.estimated_replacement_value_inr),
     suggested_rent_per_day_inr: money(raw.suggested_rent_per_day_inr),
     suggested_sale_price_inr: money(raw.suggested_sale_price_inr),
@@ -133,8 +140,10 @@ function tidy(raw: SnapResult): SnapResult {
   };
 }
 
-/** Reads one photo and drafts the listing. Throws if the model call fails. */
-export async function snapToList(image: { base64: string; mimeType: string }): Promise<SnapResult> {
+export type DraftInput = { image: { base64: string; mimeType: string } } | { model: string };
+
+/** Drafts the listing from a photo or a model name. Throws if the model call fails. */
+export async function snapToList(input: DraftInput): Promise<SnapResult> {
   if (snapMockMode()) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.info('[snap-to-list] model=mock input_tokens=0 output_tokens=0');
@@ -146,13 +155,15 @@ export async function snapToList(image: { base64: string; mimeType: string }): P
     model: MODEL,
     // Counts the model's reasoning too: a plain bag used ~480, so 600 cut richer items short
     max_output_tokens: 2000,
-    instructions: SYSTEM_PROMPT,
+    instructions: 'image' in input ? PHOTO_PROMPT : MODEL_PROMPT,
     input: [{
       role: 'user',
-      content: [
-        { type: 'input_text', text: 'Draft a rental listing for the item in this photo.' },
-        { type: 'input_image', image_url: `data:${image.mimeType};base64,${image.base64}`, detail: 'low' },
-      ],
+      content: 'image' in input
+        ? [
+            { type: 'input_text', text: 'Draft a rental listing for the item in this photo.' },
+            { type: 'input_image', image_url: `data:${input.image.mimeType};base64,${input.image.base64}`, detail: 'low' },
+          ]
+        : [{ type: 'input_text', text: `Draft a rental listing with full specifications for: ${input.model}` }],
     }],
     text: { format: { type: 'json_schema', name: 'snap_to_list', strict: true, schema: SCHEMA } },
   });

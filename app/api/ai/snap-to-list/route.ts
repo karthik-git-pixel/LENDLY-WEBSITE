@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/verify-auth';
-import { snapConfigured, snapToList } from '@/lib/ai/snapToList';
+import { snapConfigured, snapToList, type DraftInput } from '@/lib/ai/snapToList';
 import { SNAP_MAX_BYTES, type SnapResponse } from '@/lib/ai/snap-types';
 
 // Calls per user per hour. Kept in memory, so it is per server instance — enough
 // to stop a runaway client, not a billing guarantee.
-const HOURLY_LIMIT = 10;
+const HOURLY_LIMIT = 30;
 const HOUR = 60 * 60 * 1000;
 const calls = new Map<string, number[]>();
 
@@ -31,21 +31,30 @@ export async function POST(request: Request) {
     return fallback('Please log in again', 401);
   }
 
-  const form = await request.formData().catch(() => null);
-  const image = form?.get('image');
-  if (!(image instanceof File)) return fallback('Send one photo', 400);
-  if (!image.type.startsWith('image/')) return fallback('That file isn’t a photo', 400);
-  if (image.size > SNAP_MAX_BYTES) return fallback('Photo is larger than 8 MB', 400);
+  // A photo comes as multipart form data; a model name as JSON { model }
+  let input: DraftInput;
+  if ((request.headers.get('content-type') || '').includes('application/json')) {
+    const body = await request.json().catch(() => null) as { model?: unknown } | null;
+    const model = typeof body?.model === 'string' ? body.model.trim().slice(0, 100) : '';
+    if (model.length < 2) return fallback('Type the brand and model', 400);
+    input = { model };
+  } else {
+    const form = await request.formData().catch(() => null);
+    const image = form?.get('image');
+    if (!(image instanceof File)) return fallback('Send one photo', 400);
+    if (!image.type.startsWith('image/')) return fallback('That file isn’t a photo', 400);
+    if (image.size > SNAP_MAX_BYTES) return fallback('Photo is larger than 8 MB', 400);
+    input = { image: { base64: Buffer.from(await image.arrayBuffer()).toString('base64'), mimeType: image.type } };
+  }
 
-  if (!snapConfigured()) return fallback('Snap to List isn’t set up yet');
-  if (overLimit(uid)) return fallback('You’ve used Snap to List 10 times this hour — fill this one in manually', 429);
+  if (!snapConfigured()) return fallback('AI auto-fill isn’t set up yet');
+  if (overLimit(uid)) return fallback(`You’ve used AI auto-fill ${HOURLY_LIMIT} times this hour — fill this one in manually`, 429);
 
   try {
-    const base64 = Buffer.from(await image.arrayBuffer()).toString('base64');
-    const result = await snapToList({ base64, mimeType: image.type });
+    const result = await snapToList(input);
     return NextResponse.json<SnapResponse>({ fallback: false, result });
   } catch (error) {
     console.error('[snap-to-list] failed:', error instanceof Error ? error.message : error);
-    return fallback('Couldn’t read the photo');
+    return fallback('AI couldn’t fill this in — try again');
   }
 }
