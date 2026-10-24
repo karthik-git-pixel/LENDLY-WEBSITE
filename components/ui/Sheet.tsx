@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 interface SheetProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
 }
@@ -53,14 +53,16 @@ export default function Sheet({ open, onClose, title, children, footer }: SheetP
 
   return createPortal(
     <div className="ln-sheet-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={panelRef} className="ln-sheet" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={panelRef} className="ln-sheet" role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined}>
         <div className="ln-sheet-grip" aria-hidden="true" />
-        <div className="ln-sheet-head">
-          <h2 id={titleId}>{title}</h2>
-          <button type="button" className="ln-icon-btn" onClick={onClose} aria-label="Close">
-            <X size={20} />
-          </button>
-        </div>
+        {title && (
+          <div className="ln-sheet-head">
+            <h2 id={titleId}>{title}</h2>
+            <button type="button" className="ln-icon-btn" onClick={onClose} aria-label="Close">
+              <X size={20} />
+            </button>
+          </div>
+        )}
         <div className="ln-sheet-body">{children}</div>
         {footer && <div className="ln-sheet-foot">{footer}</div>}
       </div>
