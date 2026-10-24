@@ -5,12 +5,12 @@ import Image from '@/components/AppImage';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  BadgeCheck, Camera, Copy, Eye, FileText, IndianRupee, Loader2, Pause, Pencil, Play, Plus, Printer, ShieldCheck, Trash2, Wallet,
+  BadgeCheck, CalendarDays, Camera, Copy, Eye, FileText, IndianRupee, Loader2, Pause, Pencil, Play, Plus, Printer, QrCode, ShieldCheck, Trash2, Wallet,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/lib/auth-context';
 import {
-  deleteProduct, getOrdersBySeller, getPrintOrdersByProvider, getProductsBySeller, requestWithdrawal, updatePrintOrder,
+  deleteProduct, getOrdersBySeller, getPrintOrdersByProvider, getProductsBySeller, requestWithdrawal, subscribeToMyOrders, updatePrintOrder,
   updateProduct, updateUserProfile, type Order, type PrintOrder, type Product, type UserProfile,
 } from '@/lib/supabase-db';
 import { getPrintDocumentUrl, uploadImage } from '@/lib/upload';
@@ -21,8 +21,10 @@ import { getOpenState } from '@/lib/store-hours';
 import { kycSubmitted, shopReady } from '@/lib/kyc';
 import Sheet from '@/components/ui/Sheet';
 import { avatarFor } from '@/components/AppHeader';
+import SellerQrScanner from '@/components/seller/SellerQrScanner';
+import SellerOrdersList from '@/components/seller/SellerOrdersList';
 
-type Tab = 'rent' | 'print';
+type Tab = 'orders' | 'rent' | 'print';
 
 const NEXT_PRINT_STEP: Record<string, { status: string; label: string }[]> = {
   pending: [{ status: 'accepted', label: 'Accept' }, { status: 'declined', label: 'Decline' }],
@@ -39,7 +41,10 @@ function SellerHub() {
   const router = useRouter();
   const params = useSearchParams();
   const { user, profile, loading, refreshProfile } = useAuth();
-  const [tab, setTab] = useState<Tab>(params.get('tab') === 'print' ? 'print' : 'rent');
+  const initialTab = params.get('tab');
+  const [tab, setTab] = useState<Tab>(
+    initialTab === 'print' ? 'print' : initialTab === 'rent' ? 'rent' : 'orders'
+  );
   const [products, setProducts] = useState<Product[] | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [prints, setPrints] = useState<PrintOrder[]>([]);
@@ -60,6 +65,15 @@ function SellerHub() {
   }, [uid]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Real-time live updates when customer bookings or handovers change
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = subscribeToMyOrders(uid, () => {
+      load();
+    });
+    return () => unsub();
+  }, [uid, load]);
 
   // Brand-new lenders start with the 3-step setup; existing shops keep their hub
   useEffect(() => {
@@ -109,17 +123,62 @@ function SellerHub() {
           <button type="button" onClick={() => setWithdrawOpen(true)}><span><Wallet size={13} aria-hidden="true" /> Online balance</span><strong>₹{Math.round(profile?.earnings || 0).toLocaleString('en-IN')}</strong></button>
         </div>
 
-        <div className="ln-tabs" role="tablist" style={{ marginTop: 16 }}>
-          <button type="button" role="tab" className="ln-tab" aria-selected={tab === 'rent'} onClick={() => setTab('rent')}>Rentals</button>
-          <button type="button" role="tab" className="ln-tab" aria-selected={tab === 'print'} onClick={() => setTab('print')}><Printer size={15} aria-hidden="true" /> Print jobs</button>
+        {/* QR Scanner & Code Handover Section */}
+        <SellerQrScanner sellerId={uid} onSuccess={load} />
+
+        {/* Tab Navigation: Customer Bookings & Handover, Listings, Print jobs */}
+        <div className="ln-tabs" role="tablist" style={{ marginTop: 20 }}>
+          <button
+            type="button"
+            role="tab"
+            className="ln-tab"
+            aria-selected={tab === 'orders'}
+            onClick={() => setTab('orders')}
+          >
+            <CalendarDays size={15} aria-hidden="true" /> Customer Bookings
+            {pending > 0 && <span className="sh-tab-badge">{pending}</span>}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className="ln-tab"
+            aria-selected={tab === 'rent'}
+            onClick={() => setTab('rent')}
+          >
+            My Listings ({listings.length})
+          </button>
+          {profile?.isPrintProvider && (
+            <button
+              type="button"
+              role="tab"
+              className="ln-tab"
+              aria-selected={tab === 'print'}
+              onClick={() => setTab('print')}
+            >
+              <Printer size={15} aria-hidden="true" /> Print jobs ({prints.length})
+            </button>
+          )}
         </div>
 
-        {tab !== 'print' ? (
+        {tab === 'orders' ? (
+          <div style={{ marginTop: 14 }}>
+            <SellerOrdersList orders={tabOrders} onRefresh={load} />
+          </div>
+        ) : tab === 'rent' ? (
           <>
-            <Link href="/profile/orders?role=seller" className="sh-banner">
-              <span><strong>{pending} new booking request{pending === 1 ? '' : 's'}</strong> · {upcoming} confirmed or out on rent</span>
-              <span className="ln-text-btn">Manage →</span>
-            </Link>
+            {pending > 0 && (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setTab('orders')}
+                onKeyDown={e => e.key === 'Enter' && setTab('orders')}
+                className="sh-banner"
+                style={{ cursor: 'pointer', marginTop: 14 }}
+              >
+                <span><strong>{pending} new booking request{pending === 1 ? '' : 's'}</strong> · {upcoming} confirmed or out on rent</span>
+                <span className="ln-text-btn">Review bookings →</span>
+              </div>
+            )}
 
             {!products ? (
               <div className="ln-skel" style={{ height: 180, borderRadius: 16, marginTop: 14 }} />
@@ -130,7 +189,7 @@ function SellerHub() {
                 <div className="ln-empty-actions"><Link href="/sell/new" className="ln-btn ln-btn-primary"><Plus size={16} aria-hidden="true" /> Rent something out</Link></div>
               </div>
             ) : (
-              <ul className="od-list">
+              <ul className="od-list" style={{ marginTop: 14 }}>
                 {listings.map(p => (
                   <li key={p.id} className="od-card">
                     <div className="od-top">

@@ -10,11 +10,13 @@ import {
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
+  Clock,
   Copy,
   ExternalLink,
   MapPin,
   MessageCircle,
   Navigation,
+  ShieldCheck,
   Store,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -36,7 +38,7 @@ import { requestRefund } from '@/lib/checkout';
 import { orderSteps, paymentLabel, rentBreakdown, statusLabel, statusTone } from '@/lib/orders';
 import { formatDistance, getDistanceKm, getGoogleMapsUrl } from '@/lib/location';
 import { useUserLocation } from '@/lib/location-context';
-import { formatRange } from '@/lib/time';
+import { formatDateTime, formatRange } from '@/lib/time';
 
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
@@ -203,6 +205,57 @@ export default function QRPage({ params }: { params: Promise<{ orderId: string }
             <CalendarDays size={14} aria-hidden="true" /> {formatRange(order.startAt, order.endAt)} · {rentBreakdown(order)}
           </p>
         )}
+
+        {/* Live Seller Approval Status Notice */}
+        <div className={`qr-approval-box is-${order.status}`} role="status">
+          {order.status === 'pending' && (
+            <div className="qr-approval-content">
+              <div className="qr-approval-icon is-pending">
+                <Clock size={20} />
+              </div>
+              <div>
+                <h4>Waiting for Seller Confirmation</h4>
+                <p>Your request has been received by <strong>{shopName}</strong>. Once confirmed, you can proceed with pickup.</p>
+              </div>
+            </div>
+          )}
+
+          {order.status === 'accepted' && (
+            <div className="qr-approval-content">
+              <div className="qr-approval-icon is-confirmed">
+                <CheckCircle2 size={20} />
+              </div>
+              <div>
+                <h4>Booking Confirmed by Seller!</h4>
+                <p><strong>{shopName}</strong> confirmed your booking. Show your QR code below at the shop when collecting your item.</p>
+              </div>
+            </div>
+          )}
+
+          {order.status === 'active' && (
+            <div className="qr-approval-content">
+              <div className="qr-approval-icon is-active">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <h4>Picked Up &amp; Verified by Seller</h4>
+                <p>Handover verified by <strong>{shopName}</strong>{order.pickedUpAt ? ` on ${formatDateTime(order.pickedUpAt)}` : ''}. Return due by {order.endAt ? formatDateTime(order.endAt) : 'scheduled date'}. Show this QR again upon return.</p>
+              </div>
+            </div>
+          )}
+
+          {order.status === 'completed' && (
+            <div className="qr-approval-content">
+              <div className="qr-approval-icon is-completed">
+                <CheckCircle2 size={20} />
+              </div>
+              <div>
+                <h4>Return Approved &amp; Completed!</h4>
+                <p>Return verified by <strong>{shopName}</strong>{order.returnedAt ? ` on ${formatDateTime(order.returnedAt)}` : ''}. Any security deposit has been released.</p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* QR Code / Handover Card */}
         {isBuyer && open && code ? (
