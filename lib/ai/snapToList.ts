@@ -144,7 +144,8 @@ export async function snapToList(image: { base64: string; mimeType: string }): P
   client ??= new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const response = await client.responses.create({
     model: MODEL,
-    max_output_tokens: 600,
+    // Counts the model's reasoning too: a plain bag used ~480, so 600 cut richer items short
+    max_output_tokens: 2000,
     instructions: SYSTEM_PROMPT,
     input: [{
       role: 'user',
