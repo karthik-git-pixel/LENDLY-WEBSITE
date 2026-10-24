@@ -66,7 +66,7 @@ function HomeContent() {
       return market.nearbyItems.some(i => i.sellerId === s.uid && matchesCategory(i, filters.category));
     }
     return true;
-  }).sort((a, b) => (b.reviewCount ? Number(b.rating) : 0) - (a.reviewCount ? Number(a.rating) : 0) || a.distance - b.distance),
+  }).sort((a, b) => a.distance - b.distance),
   [market.nearbyShops, market.nearbyItems, filters]);
 
   const fresh = useMemo(() => {
@@ -112,7 +112,7 @@ function HomeContent() {
 
         {loading ? (
           <>
-            <Section title="Top-rated shops near you">
+            <Section title="Shops near you">
               <div className="ln-hscroll">
                 {Array.from({ length: 4 }, (_, i) => <ShopCardSkeleton key={i} />)}
               </div>
@@ -126,7 +126,7 @@ function HomeContent() {
         ) : (
           <>
             {shops.length > 0 && (
-              <Section title="Top-rated shops near you" seeAllHref="/search?tab=shops">
+              <Section title="Shops near you" seeAllHref="/search?tab=shops">
                 <div className="ln-hscroll">
                   {shops.slice(0, 12).map((shop, i) => <ShopCard key={shop.uid} shop={shop} priority={i < 2} />)}
                 </div>
